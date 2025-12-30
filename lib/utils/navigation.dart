@@ -1,0 +1,49 @@
+import 'package:get/get.dart';
+import 'package:visitor_app/screen/screens/dashboard/dashboard_view.dart';
+import 'package:visitor_app/screen/screens/dashboard/visitor_screen/add_visitor_view.dart';
+import 'package:visitor_app/screen/screens/dashboard/visitor_screen/user_detail_view.dart';
+import 'package:visitor_app/screen/screens/login_screen/login_screen.dart';
+import 'package:visitor_app/splash_screen/splash_view.dart';
+
+mixin Routes {
+  static const defaultTransition = Transition.cupertino;
+  // static const downToUpTransition = Transition.downToUp;
+
+  // get started
+  static const String splashScreen = '/splashScreen';
+  static const String loginScreen = '/loginScreen';
+  static const String dashboardView = '/DashboardView';
+  static const String userDetailView = '/UserDetailView';
+  static const String addVisitorView = '/AddVisitorView';
+
+
+  static List<GetPage<dynamic>> pages = [
+    GetPage<dynamic>(
+      name: splashScreen,
+      page: () => const SplashView(),
+      transition: defaultTransition,
+    ),
+    GetPage<dynamic>(
+      name: loginScreen,
+      page: () =>  LoginScreen(),
+      transition: defaultTransition,
+    ),
+    GetPage<dynamic>(
+      name: dashboardView,
+      page: () => const DashboardView(),
+      transition: defaultTransition,
+    ),
+    GetPage<dynamic>(
+      name: userDetailView,
+      page: () => const UserDetailView(),
+      transition: defaultTransition,
+    ),
+    GetPage<dynamic>(
+      name: addVisitorView,
+      page: () =>  AddVisitorView(),
+      transition: defaultTransition,
+    ),
+
+
+  ];
+}
