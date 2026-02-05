@@ -27,13 +27,23 @@ class AppValidator {
       return null;
     }
   }
+  static String? siteValidator(String? value) {
+    if (value!.isEmpty) {
+      return ("e name");
+    } else {
+      return null;
+    }
+  }
 
   static String? validateIndianMobile(String? value) {
     if (value == null || value.trim().isEmpty) {
       return "Mobile number is required";
     }
 
-    if (!RegExp(r'^[6-9]\d{9}$').hasMatch(value.trim())) {
+    // if (!RegExp(r'^[6-9]\d{9}$').hasMatch(value.trim())) {
+    //   return "Enter a valid 10-digit mobile number";
+    // }
+    if (value.length <= 9) {
       return "Enter a valid 10-digit mobile number";
     }
 

@@ -99,9 +99,9 @@ class LoginScreen extends StatelessWidget {
                   ),
                   CustomButton(
                       title: AppString.signIn,
-                      onTap: () {
+                      onTap: () async {
                         if (formKey.currentState!.validate()) {
-                          Get.offNamed(Routes.dashboardView);
+                       await   _loginController.postLogin(context);
                         }
                         log("hello");
                       },

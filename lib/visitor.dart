@@ -14,6 +14,7 @@ class VisitorApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: AppString.appName,
       getPages: Routes.pages,
+      theme: ThemeData(splashColor: Colors.transparent),
       initialRoute: Routes.splashScreen,
       initialBinding: AppBidding(),
       builder: (context, child) {

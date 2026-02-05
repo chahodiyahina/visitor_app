@@ -1,13 +1,28 @@
+import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:open_file/open_file.dart' show OpenFile;
+import 'package:visitor_app/screen/screens/dashboard/dashController.dart';
+import 'package:visitor_app/screen/screens/dashboard/visitor_screen/pdf_view.dart';
 import 'package:visitor_app/screen/screens/dashboard/visitor_screen/visitor_controller.dart';
 import 'package:visitor_app/constant/app_color.dart';
-import 'package:visitor_app/constant/app_images.dart';
+import 'package:visitor_app/screen/screens/dashboard/visitor_screen/models/visitor_model.dart';
+import 'package:visitor_app/utils/appUtilas.dart';
+import 'package:visitor_app/utils/app_string.dart';
 import 'package:visitor_app/utils/navigation.dart';
 import 'package:visitor_app/utils/size_utils.dart';
+import 'package:visitor_app/widget/card_container.dart' show CardContainer;
 import 'package:visitor_app/widget/custom_button.dart';
+import 'package:visitor_app/widget/custom_cachedImage.dart';
+import 'package:visitor_app/widget/custom_loading_dialog.dart';
 import 'package:visitor_app/widget/custom_text.dart';
 import 'package:visitor_app/widget/custom_textfield.dart';
+import 'package:visitor_app/widget/custom_toast.dart';
+
+import 'checkOutOptionDilog_view.dart';
 
 class VisitorView extends StatefulWidget {
   const VisitorView({super.key});
@@ -20,11 +35,21 @@ class _VisitorViewState extends State<VisitorView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final VisitorController _visitorController = Get.put(VisitorController());
+  final DashController _dashController = Get.find();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: 4);
+    getVisitorApiData();
+    log("get user type in visitor ${_dashController.userType.value}");
+    _tabController = TabController(
+        vsync: this,
+        length: /*_dashController.userType.value == AppString.security ?  4 :*/
+            3);
+  }
+
+  getVisitorApiData() async {
+    await _visitorController.getVisitorScreenData();
   }
 
   @override
@@ -37,290 +62,413 @@ class _VisitorViewState extends State<VisitorView>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgColor,
-      body: Padding(
-        padding:
-            EdgeInsets.symmetric(horizontal: SizeUtils.horizontalBlockSize * 2),
-        child: Column(children: [
+      body: Obx(
+        () => Column(children: [
           TabBar(
               controller: _tabController,
-              dividerColor: AppColors.purple,
+              dividerColor: AppColors.greyF1,
+              // tabAlignment: TabAlignment.start,
+              indicatorColor: AppColors.black11A,
+              labelColor: AppColors.black11A,
+              // isScrollable: true,
               tabs: [
                 Tab(
-                    icon: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomText(
-                      title: "Pending  ",
-                      fontSize: SizeUtils.fSize_10(),
-                    ),
-                    circleContainer(
-                      child: CustomText(
-                        title: "0",
-                        fontSize: SizeUtils.fSize_11(),
-                        color: AppColors.whiteColor,
-                      ),
-                    )
-                  ],
-                )),
+                    icon: tabTitleView(
+                        title: "Pending  ",
+                        num: _visitorController
+                            .visitorModel.value.pendingVisitorList?.length
+                            .toString())),
                 Tab(
-                    icon: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomText(
-                      title: "Active  ",
-                      fontSize: SizeUtils.fSize_10(),
-                    ),
-                    circleContainer(
-                      child: CustomText(
-                        title: "10",
-                        fontSize: SizeUtils.fSize_11(),
-                        color: AppColors.whiteColor,
-                      ),
-                    )
-                  ],
-                )),
+                    icon: tabTitleView(
+                        num: _visitorController
+                            .visitorModel.value.activeVisitorList?.length
+                            .toString())),
+                /* if( _dashController.userType.value == AppString.security)
                 Tab(
-                    icon: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomText(
-                      title: "Check Out",
-                      fontSize: SizeUtils.fSize_10(),
-                    )
-                  ],
-                )),
+                    icon: CustomText(
+                        title: "Check Out", fontSize: SizeUtils.fSize_10())),*/
                 Tab(
-                    icon: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomText(
-                      title: "History  ",
-                      fontSize: SizeUtils.fSize_10(),
-                    ),
-                    circleContainer(
-                      child: CustomText(
-                        title: "3",
-                        fontSize: SizeUtils.fSize_11(),
-                        color: AppColors.whiteColor,
-                      ),
-                    )
-                  ],
-                )),
+                    icon: tabTitleView(
+                        title: "History  ",
+                        num: _visitorController
+                            .visitorModel.value.historyVisitorList?.length
+                            .toString())),
               ]),
+          SizedBox(height: SizeUtils.horizontalBlockSize * 2),
           Expanded(
             child: TabBarView(controller: _tabController, children: [
-              //pending
-              ListView.builder(
-                  itemCount: 10,
-                  shrinkWrap: true,
-                  itemBuilder: (index, context) {
-                    return Card(
-                      color: AppColors.whiteColor,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(children: [
-                                Container(
-                                    height: SizeUtils.verticalBlockSize *7,
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(14)
-                                    ),
-                                    child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(14),
-                                        child: Image.asset(AppImage.profile))
-                                ),
-                                CustomText(
-                                    title: '  Rashmin',
-                                    fontSize: SizeUtils.fSize_13(),
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.black11A),
-                              ]),
-                              const Divider(),
-                              RichText(
-                                  text: TextSpan(
-                                      text: "Company:",
-                                      children: [
-                                        TextSpan(
-                                            text: ' SHREE HARI KRISHNA ART',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: SizeUtils.fSize_10(),
-                                                color: AppColors.grey80)),
-                                      ],
-                                      style: TextStyle(
-                                          color: AppColors.black11A,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: SizeUtils.fSize_10()))),
-                              const SizedBox(height: 6),
-                              Row(children: [
-                                RichText(
-                                    text: TextSpan(
-                                        children: [
-                                      const WidgetSpan(
-                                          child: Icon(Icons.access_time,
-                                              size: 16)),
-                                      TextSpan(
-                                          text: ' 16:53:11',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: SizeUtils.fSize_10(),
-                                              color: AppColors.black11A)),
-                                      TextSpan(
-                                          text: ' to ',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: SizeUtils.fSize_10(),
-                                              color: AppColors.black11A)),
-                                      TextSpan(
-                                          text: '16:53:11',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: SizeUtils.fSize_10(),
-                                              color: AppColors.grey80)),
-                                    ],
-                                        style: TextStyle(
-                                            color: AppColors.grey80,
-                                            fontWeight: FontWeight.w400,
-                                            fontSize: SizeUtils.fSize_10()))),
-
-                                const Spacer(),
-                                RichText(
-                                    text: TextSpan(
-                                        text: "Duration:",
-                                        children: [
-                                          TextSpan(
-                                              text: ' 40m',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w400,
-                                                  fontSize:
-                                                      SizeUtils.fSize_10(),
-                                                  color: AppColors.grey80)),
-                                        ],
-                                        style: TextStyle(
-                                            color: AppColors.black11A,
-                                            fontWeight: FontWeight.w400,
-                                            fontSize: SizeUtils.fSize_10()))),
-                              ])
-                            ]),
-                      ),
-                    );
-                  }),
-              //active
-              ListView.builder(
-                  itemCount: 10,
-                  shrinkWrap: true,
-                  itemBuilder: (index, context) {
-                    return Container(
-                      margin: const EdgeInsets.all(5),
-                      padding:
-                          EdgeInsets.all(SizeUtils.horizontalBlockSize * 2.4),
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 10,
-                                offset: const Offset(0, 10)),
-                          ]),
-                      child: Column(
-                        children: [
+              ///pending
+              RefreshIndicator(
+                onRefresh: () async {
+                  await _visitorController.getVisitorScreenData();
+                },
+                child: ListView.builder(
+                    itemCount: _visitorController
+                        .visitorModel.value.pendingVisitorList?.length,
+                    shrinkWrap: true,
+                    physics: const BouncingScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      VisitorList? data = _visitorController
+                          .visitorModel.value.pendingVisitorList?[index];
+                      return CardContainer(
+                        child: Column(children: [
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                height: SizeUtils.verticalBlockSize *7,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(14)
-                                ),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(14),
-                                    child: Image.asset(AppImage.profile))
-                              ),
-                              const SizedBox(width: 8),
-                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                     CustomText(
-                                      title:'Rashmin kumar',
-                                        fontSize: SizeUtils.fSize_13(),
-                                        fontWeight: FontWeight.w700
-                                    ),
-                                    const SizedBox(height: 4),
-                                     CustomText(
-                                      title:'Active',
-                                        color: AppColors.green,
-                                        fontSize: SizeUtils.fSize_10(),
-                                        fontWeight: FontWeight.w500
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                imgProfileView(img: data?.imagePath),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        const Icon(Icons.access_time,
-                                            size: 16, color: AppColors.grey80),
-                                        const SizedBox(width: 2),
-                                        CustomText(title:'12:14 PM',fontSize: SizeUtils.fSize_10(),color: AppColors.black11A,),
-                                        const SizedBox(width: 8),
-                                        const Icon(Icons.call,
-                                            size: 16, color: Colors.grey),
-                                        const SizedBox(width: 2),
-                                         CustomText(title:'6354223031',fontSize: SizeUtils.fSize_10(),color: AppColors.black11A,),
-                                      ],
-                                    ),
-                                  ],
+                                        CustomText(
+                                            title: data?.name ?? "",
+                                            fontSize: SizeUtils.fSize_13(),
+                                            fontWeight: FontWeight.w700),
+                                        const SizedBox(height: 4),
+                                        CustomText(
+                                            title:
+                                                data?.appointmentStatus ?? "",
+                                            color: AppColors.greyA6,
+                                            fontSize: SizeUtils.fSize_10(),
+                                            fontWeight: FontWeight.w500),
+                                        const SizedBox(height: 8),
+                                        Row(children: [
+                                          const Icon(Icons.access_time,
+                                              size: 16,
+                                              color: AppColors.grey80),
+                                          const SizedBox(width: 2),
+                                          CustomText(
+                                              title: AppUtils.convertTo12Hour(
+                                                  data?.time ?? "11:59:56"),
+                                              fontSize: SizeUtils.fSize_10()),
+                                          const SizedBox(width: 8),
+                                          const Icon(Icons.call,
+                                              size: 16, color: Colors.grey),
+                                          const SizedBox(width: 2),
+                                          CustomText(
+                                            title: data?.mobileNumber ?? "",
+                                            fontSize: SizeUtils.fSize_10(),
+                                          ),
+                                        ]),
+                                      ]),
                                 ),
-                              ),
-                              CustomButton(
-                                onTap: () {},
-                                title:'Check Out',
-                                height: SizeUtils.verticalBlockSize * 3.6,
-                                width: SizeUtils.horizontalBlockSize * 24,
-                                borderColor: AppColors.grey80,
-                                buttonColor: Colors.transparent,
-                                fontSize: SizeUtils.fSize_10(),
-                              ),
-                            ],
-                          ),
+                                CustomButton(
+                                  onTap: () async {
+                                    if (_dashController.userType.value ==
+                                        AppString.security) {
+                                      if (data?.imagePath == null ||
+                                          (data?.imagePath ?? "").isEmpty) {
+                                        _visitorController
+                                            .selectedVisitorIndex.value = index;
+                                        Get.toNamed(Routes.addVisitorView,
+                                            arguments: AppString.visitor);
+                                        CustomToast.infoToast(
+                                            message:
+                                                "Please upload image to chek in",
+                                            context: context);
+                                      } else {
+                                        await _visitorController
+                                            .updateAppointmentStatusCheckIn(
+                                                context,
+                                                id: data?.id.toString());
+                                        _tabController.index = 1;
+                                      }
+                                    }
+                                  },
+                                  title: _dashController.userType.value ==
+                                          AppString.security
+                                      ? 'Check In'
+                                      : "Check In Panding",
+                                  height: SizeUtils.verticalBlockSize * 3.6,
+                                  width: _dashController.userType.value ==
+                                          AppString.security
+                                      ? SizeUtils.horizontalBlockSize * 24
+                                      : SizeUtils.horizontalBlockSize * 26,
+                                  borderColor: AppColors.grey80,
+                                  buttonColor: Colors.transparent,
+                                  fontSize: SizeUtils.fSize_10(),
+                                ),
+                              ]),
                           const SizedBox(height: 10),
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              ActionIcon(Icons.print),
-                              ActionIcon(Icons.remove_red_eye),
-                              ActionIcon(Icons.edit),
-                              ActionIcon(Icons.delete),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-              //check out
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                actionIcon(
+                                    icon: Icons.print,
+                                    onTap: () async {
+                                      customLoadingDialog();
+                                      Uint8List? imageBytes;
+                                      if (data?.imagePath != null) {
+                                        imageBytes =
+                                            await AppUtils.imageUrlToUint8List(
+                                                data?.imagePath ?? "");
+                                      }
+                                      generateVisitorPassPdf(
+                                              hostName: data?.host ?? "",
+                                              vehicleType:
+                                                  data?.vehicleType ?? "",
+                                              vehicleNo:
+                                                  data?.vehicleNumber ?? "",
+                                              visitorName: data?.name ?? "",
+                                              badgeNo: data?.badgeNumber ?? "",
+                                              mobile: data?.mobileNumber ?? "",
+                                              company: data?.companyName ?? "",
+                                              checkInTime: data?.time ?? "",
+                                              department:
+                                                  data?.department ?? "",
+                                              site: data?.entryPlace ?? "",
+                                              gate: data?.entryGate ?? "",
+                                              photo: imageBytes)
+                                          .then((file) async {
+                                        final pdfFile = File(file.path);
+                                        if (pdfFile.existsSync()) {
+                                          // Proceed to open the PDF
+                                          await OpenFile.open(pdfFile.path);
+                                        }
+                                        customHideLoadingDialog();
+                                      });
+                                    }),
+                                actionIcon(
+                                    icon: Icons.person,
+                                    onTap: () {
+                                      _visitorController
+                                          .selectedVisitorIndex.value = index;
+                                      Get.toNamed(Routes.userDetailView,
+                                          arguments: AppString.visitor);
+                                    }),
+                                actionIcon(
+                                    icon: Icons.edit,
+                                    onTap: () {
+                                      _visitorController
+                                          .selectedVisitorIndex.value = index;
+                                      Get.toNamed(Routes.addVisitorView,
+                                          arguments: AppString.visitor);
+                                    }),
+                                actionIcon(
+                                    icon: Icons.delete,
+                                    onTap: () {
+                                      _visitorController
+                                          .deleteVisitorAppointment(context,
+                                              id: data?.id.toString());
+                                    }),
+                              ]),
+                        ]),
+                      );
+                    }),
+              ),
+
+              ///active
+              RefreshIndicator(
+                onRefresh: () async {
+                  await _visitorController.getVisitorScreenData();
+                },
+                child: ListView.builder(
+                    itemCount: _visitorController
+                        .visitorModel.value.activeVisitorList?.length,
+                    shrinkWrap: true,
+                    physics: const BouncingScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      VisitorList? data = _visitorController
+                          .visitorModel.value.activeVisitorList?[index];
+                      return CardContainer(
+                        child: Column(children: [
+                          Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                imgProfileView(img: data?.imagePath),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        CustomText(
+                                            title: data?.name ?? "",
+                                            fontSize: SizeUtils.fSize_13(),
+                                            fontWeight: FontWeight.w700),
+                                        const SizedBox(height: 4),
+                                        CustomText(
+                                            title:
+                                                data?.appointmentStatus ?? "",
+                                            color: AppColors.green,
+                                            fontSize: SizeUtils.fSize_10(),
+                                            fontWeight: FontWeight.w500),
+                                        const SizedBox(height: 8),
+                                        Row(children: [
+                                          const Icon(Icons.access_time,
+                                              size: 16,
+                                              color: AppColors.grey80),
+                                          const SizedBox(width: 2),
+                                          CustomText(
+                                              title: AppUtils.convertTo12Hour(
+                                                  data?.time ?? "11:59:56"),
+                                              fontSize: SizeUtils.fSize_10()),
+                                          const SizedBox(width: 8),
+                                          const Icon(Icons.call,
+                                              size: 16, color: Colors.grey),
+                                          const SizedBox(width: 2),
+                                          CustomText(
+                                            title: data?.mobileNumber ?? "",
+                                            fontSize: SizeUtils.fSize_10(),
+                                          ),
+                                        ]),
+                                      ]),
+                                ),
+                                if (_dashController.userType.value ==
+                                        AppString.staff ||
+                                    _dashController.userType.value ==
+                                        AppString.admin)
+                                  data?.appointmentStatus == "Active"
+                                      ? Row(children: [
+                                          trueFalseView(onTap: () {
+                                            _visitorController
+                                                .updateAppointmentStatusApproval(
+                                                    context,
+                                                    id: data?.id.toString());
+                                          }),
+                                          SizedBox(width: 8),
+                                          trueFalseView(
+                                              icon: Icons.close,
+                                              color: AppColors.redColor,
+                                              onTap: () {
+                                                _visitorController
+                                                    .updateAppointmentStatusRejected(
+                                                        context,
+                                                        id: data?.id
+                                                            .toString());
+                                              }),
+                                        ])
+                                      : CustomButton(
+                                          onTap: () {},
+                                          title: 'Check Out Pending',
+                                          height:
+                                              SizeUtils.verticalBlockSize * 3.6,
+                                          width: _dashController
+                                                      .userType.value ==
+                                                  AppString.security
+                                              ? SizeUtils.horizontalBlockSize *
+                                                  26
+                                              : SizeUtils.horizontalBlockSize *
+                                                  24,
+                                          borderColor: AppColors.grey80,
+                                          buttonColor: Colors.transparent,
+                                          fontSize: SizeUtils.fSize_10()),
+                                if (_dashController.userType.value ==
+                                    AppString.security)
+                                  CustomButton(
+                                      onTap: () {
+                                        if (data?.appointmentStatus !=
+                                            "Active") {
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: true,
+                                            builder: (context) =>
+                                                CheckoutOptionsDialog(
+                                                    id: data?.id.toString()),
+                                          );
+                                        }
+                                      },
+                                      title: data?.appointmentStatus == "Active"
+                                          ? "Approval Pending"
+                                          : 'Check Out',
+                                      height: SizeUtils.verticalBlockSize * 3.6,
+                                      width: _dashController.userType.value ==
+                                              AppString.security
+                                          ? SizeUtils.horizontalBlockSize * 26
+                                          : SizeUtils.horizontalBlockSize * 24,
+                                      borderColor: AppColors.grey80,
+                                      buttonColor: Colors.transparent,
+                                      fontSize: SizeUtils.fSize_10()),
+                              ]),
+                          const SizedBox(height: 10),
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                actionIcon(
+                                    icon: Icons.print,
+                                    onTap: () async {
+                                      Uint8List? imageBytes;
+                                      if (data?.imagePath != null) {
+                                        imageBytes =
+                                            await AppUtils.imageUrlToUint8List(
+                                                data?.imagePath ?? "");
+                                      }
+                                      generateVisitorPassPdf(
+                                              hostName: data?.host ?? "",
+                                              vehicleType:
+                                                  data?.vehicleType ?? "",
+                                              vehicleNo:
+                                                  data?.vehicleNumber ?? "",
+                                              visitorName: data?.name ?? "",
+                                              badgeNo: data?.badgeNumber ?? "",
+                                              mobile: data?.mobileNumber ?? "",
+                                              company: data?.companyName ?? "",
+                                              checkInTime: data?.time ?? "",
+                                              department:
+                                                  data?.department ?? "",
+                                              site: data?.entryPlace ?? "",
+                                              gate: data?.entryGate ?? "",
+                                              photo: imageBytes)
+                                          .then((file) async {
+                                        final pdfFile = File(file.path);
+                                        if (pdfFile.existsSync()) {
+                                          // Proceed to open the PDF
+                                          await OpenFile.open(pdfFile.path);
+                                        }
+                                      });
+                                    }),
+                                actionIcon(
+                                    icon: Icons.person,
+                                    onTap: () {
+                                      _visitorController
+                                          .selectedVisitorIndex.value = index;
+                                      Get.toNamed(Routes.userDetailView,
+                                          arguments: AppString.active);
+                                    }),
+                                actionIcon(
+                                    icon: Icons.edit,
+                                    onTap: () {
+                                      _visitorController
+                                          .selectedVisitorIndex.value = index;
+                                      Get.toNamed(Routes.addVisitorView,
+                                          arguments: AppString.active);
+                                    }),
+                                actionIcon(
+                                    icon: Icons.delete,
+                                    onTap: () {
+                                      _visitorController
+                                          .deleteVisitorAppointment(context,
+                                              id: data?.id.toString());
+                                    }),
+                              ]),
+                        ]),
+                      );
+                    }),
+              ),
+
+              ///check out
+              /*if( _dashController.userType.value == AppString.security )
               Container(
                 color: AppColors.bgColor2,
-                padding: EdgeInsets.all(SizeUtils.horizontalBlockSize * 2),
+                padding: EdgeInsets.only(
+                    right: SizeUtils.horizontalBlockSize * 3,
+                    left: SizeUtils.horizontalBlockSize * 3),
+                // margin: EdgeInsets.all(SizeUtils.horizontalBlockSize * 3),
                 child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.qr_code_scanner,
-                              size: SizeUtils.verticalBlockSize * 3,
-                            ),
-                            CustomText(
+                        Row(children: [
+                          Icon(Icons.qr_code_scanner,
+                              size: SizeUtils.verticalBlockSize * 3),
+                          CustomText(
                               title: "  Visitor Details Scanner",
                               fontSize: SizeUtils.fSize_14(),
-                              fontWeight: FontWeight.bold,
-                            )
-                          ],
-                        ),
+                              fontWeight: FontWeight.bold)
+                        ]),
                         SizedBox(height: SizeUtils.verticalBlockSize * 1),
                         CustomText(
                             title:
@@ -332,24 +480,27 @@ class _VisitorViewState extends State<VisitorView>
                         Padding(
                           padding: EdgeInsets.symmetric(
                               vertical: SizeUtils.verticalBlockSize * 1),
-                          child: Row(
-                            children: [
-                              Expanded(child: borderContainer(onTap: () {
-                                _visitorController.selectedIndex.value = 0;
-                              })),
-                              SizedBox(
-                                  width: SizeUtils.horizontalBlockSize * 3),
-                              Expanded(
-                                  child: borderContainer(
-                                      title: " QR Scanner",
-                                      index: 1,
-                                      icon: Icons.radio_button_on,
-                                      onTap: () {
-                                        _visitorController.selectedIndex.value =
-                                            1;
-                                      })),
-                            ],
-                          ),
+                          child: Row(children: [
+                            Expanded(child: borderContainer(onTap: () {
+                              _visitorController.selectedIndex.value = 0;
+                            })),
+                            SizedBox(width: SizeUtils.horizontalBlockSize * 3),
+                            Expanded(
+                                child: borderContainer(
+                              title: " QR Scanner",
+                              index: 1,
+                              icon: Icons.radio_button_on,
+                              onTap: () async {
+                                _visitorController.selectedIndex.value = 1;
+                                final result =
+                                    await Get.toNamed(Routes.qrScannerPage);
+
+                                if (result != null) {
+                                  log("Scanned QR: $result");
+                                }
+                              },
+                            )),
+                          ]),
                         ),
                         CustomText(
                             color: AppColors.grey80,
@@ -361,28 +512,32 @@ class _VisitorViewState extends State<VisitorView>
                               top: SizeUtils.horizontalBlockSize * 1,
                               bottom: SizeUtils.verticalBlockSize * 2),
                           child: CustomTextField(
-                            controller: _visitorController.searchController,
-                            hintText: "e.g.,V001",
-                            fillColor: AppColors.whiteColor,
-                            hintColor: AppColors.grey80,
-                            suffixIcon: Icon(Icons.search,
-                                color: AppColors.greyA6,
-                                size: SizeUtils.horizontalBlockSize * 8),
-                          ),
+                              controller: _visitorController.searchController,
+                              hintText: "e.g.,V001",
+                              fillColor: AppColors.whiteColor,
+                              hintColor: AppColors.grey80,
+                              suffixIcon: Icon(Icons.search,
+                                  color: AppColors.greyA6,
+                                  size: SizeUtils.horizontalBlockSize * 8)),
                         ),
                         CustomText(
-                            color: AppColors.grey80,
                             title: "Active Visitors",
                             fontSize: SizeUtils.fSize_14(),
                             fontWeight: FontWeight.w800),
                         ListView.builder(
-                            itemCount: 10,
+                            itemCount: _visitorController
+                                .visitorModel.value.activeVisitorList?.length,
                             shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemBuilder: (BuildContext context, int index) {
+                            physics: const BouncingScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              VisitorList? data = _visitorController
+                                  .visitorModel.value.activeVisitorList?[index];
                               return GestureDetector(
                                 onTap: () {
-                                  Get.toNamed(Routes.userDetailView);
+                                  _visitorController
+                                      .selectedVisitorIndex.value = index;
+                                  Get.toNamed(Routes.userDetailView,
+                                      arguments: AppString.checkOut);
                                 },
                                 child: Container(
                                   margin:
@@ -391,15 +546,16 @@ class _VisitorViewState extends State<VisitorView>
                                       color: AppColors.whiteColor,
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                          color: AppColors.greyA6
-                                              .withOpacity(0.4))),
+                                          color:
+                                              AppColors.greyA6.withAlpha(80))),
                                   child: ListTile(
                                     title: CustomText(
-                                        title: "Rashmin Kumar",
+                                        title: data?.name ?? "",
                                         fontSize: SizeUtils.fSize_13(),
-                                        fontWeight: FontWeight.w800),
-                                    subtitle:  CustomText(
-                                        title: "Bhavani refractories",fontSize: SizeUtils.fSize_10()),
+                                        fontWeight: FontWeight.w700),
+                                    subtitle: CustomText(
+                                        title: data?.companyName ?? "",
+                                        fontSize: SizeUtils.fSize_10()),
                                     trailing: CustomText(
                                         title: "V001",
                                         fontSize: SizeUtils.fSize_13(),
@@ -411,108 +567,116 @@ class _VisitorViewState extends State<VisitorView>
                             })
                       ]),
                 ),
-              ),
-              //History
-              ListView.builder(
-                  itemCount: 10,
-                  shrinkWrap: true,
-                  itemBuilder: (index, context) {
-                    return Container(
-                      margin: const EdgeInsets.all(5),
-                      padding:
-                          EdgeInsets.all(SizeUtils.horizontalBlockSize * 2.4),
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 10,
-                                offset: const Offset(0, 10)),
-                          ]),
-                      child: Column(
-                        children: [
+              ),*/
+
+              ///History
+              RefreshIndicator(
+                onRefresh: () async {
+                  await _visitorController.getVisitorScreenData();
+                },
+                child: ListView.builder(
+                    itemCount: _visitorController
+                        .visitorModel.value.historyVisitorList?.length,
+                    shrinkWrap: true,
+                    physics: const BouncingScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      VisitorList? data = _visitorController
+                          .visitorModel.value.historyVisitorList?[index];
+                      return CardContainer(
+                        child: Column(children: [
                           Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Avatar
-                                Container(
-                                    height: SizeUtils.verticalBlockSize *7,
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(14)
-                                    ),
-                                    child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(14),
-                                        child: Image.asset(AppImage.profile))
-                                ),
+                                imgProfileView(img: data?.imagePath),
                                 const SizedBox(width: 8),
-                                 Expanded(
+                                Expanded(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                       CustomText(
-                                        title: 'Rashmin kumar',
-                                        color: AppColors.grey80,
-                                        fontSize:SizeUtils.fSize_13(),
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                      const SizedBox(height: 4),
-                                       CustomText(
-                                        title:'Check out',
-                                         fontSize:SizeUtils.fSize_10(),
-                                          color:AppColors.black11A,
-                                          fontWeight: FontWeight.w500,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        CustomText(
+                                            title: data?.name ?? "",
+                                            fontSize: SizeUtils.fSize_13(),
+                                            fontWeight: FontWeight.w700),
+                                        const SizedBox(height: 4),
+                                        CustomText(
+                                            title:
+                                                data?.appointmentStatus ?? "",
+                                            color: AppColors.greyA6,
+                                            fontSize: SizeUtils.fSize_10(),
+                                            fontWeight: FontWeight.w500),
+                                        const SizedBox(height: 8),
+                                        Row(children: [
                                           const Icon(Icons.access_time,
-                                              size: 16, color: AppColors.grey80),
+                                              size: 16,
+                                              color: AppColors.grey80),
                                           const SizedBox(width: 2),
-                                          CustomText(title:'12:14 PM',fontSize: SizeUtils.fSize_10(),color: AppColors.black11A,),
+                                          CustomText(
+                                              title: AppUtils.convertTo12Hour(
+                                                  data?.time ?? "11:59:56"),
+                                              fontSize: SizeUtils.fSize_10()),
                                           const SizedBox(width: 8),
                                           const Icon(Icons.call,
                                               size: 16, color: Colors.grey),
                                           const SizedBox(width: 2),
-                                          CustomText(title:'6354223031',fontSize: SizeUtils.fSize_10(),color: AppColors.black11A,),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                          CustomText(
+                                            title: data?.mobileNumber ?? "",
+                                            fontSize: SizeUtils.fSize_10(),
+                                          ),
+                                        ]),
+                                      ]),
                                 ),
                                 CustomButton(
-                                  onTap: () {},
-                                  height: SizeUtils.verticalBlockSize * 3.6,
-                                  width: SizeUtils.horizontalBlockSize * 24,
-                                  fontSize:SizeUtils.fSize_10(),
-                                   buttonColor: const Color(0xFFF0F0F0),
-                                  title: 'Completed',
-                                ),
+                                    onTap: () {},
+                                    height: SizeUtils.verticalBlockSize * 3.6,
+                                    width: SizeUtils.horizontalBlockSize * 24,
+                                    fontSize: SizeUtils.fSize_10(),
+                                    buttonColor: const Color(0xFFF0F0F0),
+                                    title: 'Completed'),
                               ]),
                           const SizedBox(height: 10),
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              ActionIcon(Icons.remove_red_eye),
-                              ActionIcon(Icons.edit),
-                              ActionIcon(Icons.delete),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                actionIcon(
+                                    icon: Icons.person,
+                                    onTap: () {
+                                      _visitorController
+                                          .selectedVisitorIndex.value = index;
+                                      Get.toNamed(Routes.userDetailView,
+                                          arguments: AppString.history);
+                                    }),
+                                actionIcon(
+                                    icon: Icons.edit,
+                                    onTap: () {
+                                      _visitorController
+                                          .selectedVisitorIndex.value = index;
+                                      Get.toNamed(Routes.addVisitorView,
+                                          arguments: AppString.history);
+                                    }),
+                                actionIcon(
+                                    icon: Icons.delete,
+                                    onTap: () {
+                                      _visitorController
+                                          .deleteVisitorAppointment(context,
+                                              id: data?.id.toString());
+                                    }),
+                              ]),
+                        ]),
+                      );
+                    }),
+              ),
             ]),
           )
         ]),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          Get.toNamed(Routes.addVisitorView);
+        onPressed: () {
+          Get.toNamed(Routes.addVisitorView, arguments: "add");
         },
         backgroundColor: AppColors.black11A,
-        child: Icon(Icons.add,color: AppColors.whiteColor,size: SizeUtils.verticalBlockSize *4),
+        child: Icon(Icons.add,
+            color: AppColors.whiteColor, size: SizeUtils.verticalBlockSize * 4),
       ),
     );
   }
@@ -541,41 +705,79 @@ class _VisitorViewState extends State<VisitorView>
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(icon ?? Icons.lock_outlined),
             CustomText(
-                title: title ?? " Manual Entry",
-                color: AppColors.black11A,
-                fontSize: SizeUtils.fSize_12())
+                title: title ?? " Manual Entry", fontSize: SizeUtils.fSize_12())
           ]),
         ),
       ),
     );
   }
 
-  Widget circleContainer({required Widget child}) {
-    return Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(4),
-      decoration: const BoxDecoration(
-          color: AppColors.black11A, shape: BoxShape.circle),
-      child: child,
+  Widget trueFalseView(
+      {Color? color, IconData? icon, GestureTapCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: SizeUtils.horizontalBlockSize * 7,
+        width: SizeUtils.horizontalBlockSize * 7,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: color ?? AppColors.green),
+        child: Icon(
+          icon ?? Icons.check,
+          color: AppColors.whiteColor,
+        ),
+      ),
     );
   }
-}
 
-class ActionIcon extends StatelessWidget {
-  final IconData icon;
-
-  const ActionIcon(this.icon, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget imgProfileView({String? img}) {
     return Container(
-      margin: const EdgeInsets.only(left: 10),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F0),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(icon, size: SizeUtils.verticalBlockSize * 2.2),
+        height: SizeUtils.verticalBlockSize * 7,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(14)),
+        child: SizedBox(
+          height: SizeUtils.horizontalBlockSize * 14,
+          width: SizeUtils.horizontalBlockSize * 14,
+          child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: CustomCachedImage(imageUrl: img ?? "")),
+        ));
+  }
+
+  Widget circleContainer({required Widget child}) {
+    return Container(
+        height: SizeUtils.horizontalBlockSize * 5,
+        width: SizeUtils.horizontalBlockSize * 5,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(3),
+        decoration: const BoxDecoration(
+            color: AppColors.black11A, shape: BoxShape.circle),
+        child: child);
+  }
+
+  Widget tabTitleView({String? title, String? num}) {
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      CustomText(title: title ?? "Active  ", fontSize: SizeUtils.fSize_10()),
+      circleContainer(
+        child: CustomText(
+            title: num ?? "10",
+            fontSize: SizeUtils.fSize_10(),
+            overflow: TextOverflow.ellipsis,
+            color: AppColors.whiteColor),
+      )
+    ]);
+  }
+
+  Widget actionIcon({required IconData icon, GestureTapCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+          margin: const EdgeInsets.only(left: 10),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.greyEB.withAlpha(150),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: SizeUtils.verticalBlockSize * 2.2)),
     );
   }
 }

@@ -13,6 +13,12 @@ class AppString {
   static const signIn = 'Sign In';
   static const cancel = 'Cancel';
   static const delete = 'Delete';
+  static const active = 'Active';
+  static const checkOut = 'CheckOut';
+  static const history = 'History';
+  static const admin = "Admin";
+  static const staff = "Staff";
+  static const security = "Security";
   static const dltData = 'Are you sure you want to delete';
 
 

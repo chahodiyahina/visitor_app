@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:visitor_app/constant/app_color.dart';
 import 'package:visitor_app/utils/app_string.dart';
+import 'package:visitor_app/utils/date_formate.dart' show DateInputFormatter;
 import 'package:visitor_app/utils/size_utils.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -106,8 +107,8 @@ class CustomTextField extends StatelessWidget {
         }
         return TextFormField(
           style: TextStyle(
-            color: textColor ?? Colors.black,
-            fontSize: fontSize ?? SizeUtils.fSize_15(),
+            color: textColor ?? AppColors.black11A,
+            fontSize: fontSize ?? SizeUtils.fSize_13(),
             letterSpacing: latterSpacing,
             fontWeight: fontWeight,
             fontFamily: fontFamily ?? AppString.fMontserrat,
@@ -134,7 +135,7 @@ class CustomTextField extends StatelessWidget {
           inputFormatters: isNumber == true
               ? <TextInputFormatter>[
                   FilteringTextInputFormatter.digitsOnly,
-                  // MaskedInputFormater('(###) ###-####')
+                  DateInputFormatter()
                 ]
               : null,
           autovalidateMode: autovalidateMode,
@@ -157,13 +158,13 @@ class CustomTextField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(radius!),
               borderSide: BorderSide(
-                color: borderColor ?? AppColors.borderColor,
+                color: focusedColor ?? AppColors.borderColor,
                 width: borderWidth ?? 1.8,
               ),
             ),
             prefix: prefixWidget,
-            // contentPadding: contentPadding ??
-            //     const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+            contentPadding: contentPadding ??
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
             isDense: true,
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon == null && isPassword
@@ -184,7 +185,7 @@ class CustomTextField extends StatelessWidget {
             hintText: hintText,
             hintStyle: TextStyle(
               color: hintColor ?? AppColors.hintTextColor,
-              fontSize: hintTextSize ?? SizeUtils.fSize_16(),
+              fontSize: hintTextSize ?? SizeUtils.fSize_13(),
               letterSpacing: latterSpacing,
               fontWeight: hintFontWeight ?? FontWeight.w400,
               fontFamily: fontFamily ?? AppString.fMontserrat,

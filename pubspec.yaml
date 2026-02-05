@@ -39,6 +39,20 @@ dependencies:
   flutter_svg: ^2.1.0
   image_picker: ^1.1.2
   intl: ^0.20.2
+  mobile_scanner: ^7.1.3
+  dropdown_button2: ^2.3.9
+  shared_preferences: ^2.5.4
+  motion_toast: ^2.15.0
+  flutter_typeahead: ^5.2.0
+  pdf: ^3.11.3
+  open_file: ^3.5.10
+  path_provider: ^2.1.5
+  cached_network_image: ^3.4.1
+  permission_handler: ^12.0.1
+  csv: ^6.0.0
+  lottie: ^3.3.2
+  connectivity_plus: ^7.0.0
+
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +79,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/lottie/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -79,26 +94,17 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: Montserrat
+    - family: noto_sans
       fonts:
-        - asset: assets/fonts/Montserrat/Montserrat-Black.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-BlackItalic.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-Bold.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-ExtraLight.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-ExtraLightItalic.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-Italic.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-Light.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-LightItalic.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-Medium.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-MediumItalic.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-Regular.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-SemiBold.ttf
-        - asset: assets/fonts/Montserrat/Montserrat-SemiBoldItalic.ttf
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
+        - asset: assets/fonts/noto_sans/NotoSansEthiopic-Medium.ttf
+
+    - family: open_sans
+      fonts:
+        - asset: assets/fonts/open_sans/OpenSans-Bold.ttf
+        - asset: assets/fonts/open_sans/OpenSans-BoldItalic.ttf
+        - asset: assets/fonts/open_sans/OpenSans-Italic.ttf
+        - asset: assets/fonts/open_sans/OpenSans-Regular.ttf
+
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

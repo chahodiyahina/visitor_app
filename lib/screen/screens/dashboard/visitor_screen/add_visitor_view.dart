@@ -1,12 +1,22 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:open_file/open_file.dart';
+import 'package:visitor_app/screen/screens/dashboard/visitor_screen/models/visitor_model.dart';
+import 'package:visitor_app/screen/screens/dashboard/visitor_screen/pdf_view.dart';
 import 'package:visitor_app/screen/screens/dashboard/visitor_screen/visitor_controller.dart';
 import 'package:visitor_app/constant/app_color.dart';
+import 'package:visitor_app/utils/appUtilas.dart';
+import 'package:visitor_app/utils/app_string.dart';
 import 'package:visitor_app/utils/size_utils.dart';
 import 'package:visitor_app/utils/validation.dart';
+import 'package:visitor_app/widget/custom_TypleAhedField.dart';
+import 'package:visitor_app/widget/custom_cachedImage.dart';
+import 'package:visitor_app/widget/custom_dropdown.dart';
+import 'package:visitor_app/widget/custom_loading_dialog.dart';
 import 'package:visitor_app/widget/custom_text.dart';
 import 'package:visitor_app/widget/custom_textfield.dart';
 
@@ -18,92 +28,168 @@ class AddVisitorView extends StatefulWidget {
 }
 
 class _AddVisitorViewState extends State<AddVisitorView> {
-  final VisitorController _visitorController = Get.find();
+  late final VisitorController _visitorController = Get.find();
   final formKey = GlobalKey<FormState>();
+  String getType = "";
+  dynamic id;
+  VisitorList? data11;
 
   @override
   void initState() {
     _visitorController.clearField();
-    _visitorController.selectedDate.value = DateTime.now();
-    _visitorController.dateController.text =
-        _visitorController.formatDate(_visitorController.selectedDate.value);
-    _visitorController.timeController.text =
-        _visitorController.getCurrentTime();
+    _visitorController.selectedVehicle.value =
+        _visitorController.vehicleTypeList.first;
+    getType = Get.arguments ?? "";
+    log("get arguments:- $getType");
+    if (getType != "add") {
+      fillVisitorData(getType);
+    } else {
+      _visitorController.selectedDate.value = DateTime.now();
+      _visitorController.clearField();
+      _visitorController.dateController.text =
+          AppUtils.formatDate(_visitorController.selectedDate.value);
+      _visitorController.timeController.text =
+          _visitorController.getCurrentTime();
+    }
     super.initState();
+  }
+
+  VisitorList? _getVisitorByType(String type) {
+    final model = _visitorController.visitorModel.value;
+    final index = _visitorController.selectedVisitorIndex.value;
+
+    switch (type) {
+      case AppString.visitor:
+        return model.pendingVisitorList?[index];
+      case AppString.active:
+        return model.activeVisitorList?[index];
+      case AppString.history:
+        return model.historyVisitorList?[index];
+      default:
+        return null;
+    }
+  }
+
+  void fillVisitorData(String type) {
+    data11 = _getVisitorByType(type);
+    log("get data in screen:-${data11?.name}");
+    final data = _getVisitorByType(type);
+    log("get data in screen:-$data");
+    if (data == null) return;
+    _visitorController.setDataInField(
+      name: data.name,
+      mobileNum: data.mobileNumber,
+      email: data.email,
+      companyName: data.companyName,
+      noOfPerson: data.totalPerson?.toString(),
+      hostName: data.host,
+      site: data.entryPlace,
+      gateNumber: data.entryGate,
+      date: data.date?.toString(),
+      time: data.time,
+      img1: data.imagePath,
+      vehicleNum: data.vehicleNumber,
+      vehicleType: data.vehicleType,
+      itemType: data.itemTypes,
+      noOfItem: data.numberOfItems,
+      img2: data.identityProofImage,
+    );
+    id = data.id;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgColor,
       appBar: AppBar(
+        backgroundColor: AppColors.bgColor,
         centerTitle: true,
         title: const CustomText(
             title: "Add New Visitor", fontWeight: FontWeight.bold),
       ),
       body: Form(
         key: formKey,
-        child: SingleChildScrollView(
-          child: Padding(
+        onChanged: () {
+          _visitorController.checkValidate();
+        },
+        child: Obx(
+          () => SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
               padding: EdgeInsets.symmetric(
-                  horizontal: SizeUtils.horizontalBlockSize * 2),
-              child: Obx(
-                () => Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: SizeUtils.verticalBlockSize * 2),
-                      _stepper(),
-                      SizedBox(height: SizeUtils.verticalBlockSize * 2),
-                      if (_visitorController.stepperIndex.value == 0)
-                        Flexible(child: _formStepper1()),
-                      if (_visitorController.stepperIndex.value == 1)
-                        Flexible(child: _formStepper2()),
-                      SizedBox(height: SizeUtils.verticalBlockSize * 2),
-                      if (_visitorController.stepperIndex.value == 1)
-                        Padding(
-                          padding: EdgeInsets.only(
-                              bottom: SizeUtils.verticalBlockSize * 1),
-                          child: CustomText(
-                              title: "Identification Photo",
-                              fontWeight: FontWeight.w600,
-                              fontSize: SizeUtils.fSize_12()),
-                        ),
-                      Obx(() {
-                        if (_visitorController.stepperIndex.value == 0 &&
-                            _visitorController.imagePath.value.isNotEmpty) {
-                          return Column(
-                            children: [
-                              Image.file(
-                                  File(_visitorController.imagePath.value),
-                                  height: 150,
-                                  width: SizeUtils.screenWidth,
-                                  fit: BoxFit.cover),
-                              SizedBox(height: SizeUtils.verticalBlockSize * 2),
-                            ],
-                          );
-                        }
-                        if (_visitorController.stepperIndex.value == 1 &&
-                            _visitorController.imagePath2.value.isNotEmpty) {
-                          return Column(
-                            children: [
-                              Image.file(
-                                  File(_visitorController.imagePath2.value),
-                                  height: 150,
-                                  width: SizeUtils.screenWidth,
-                                  fit: BoxFit.cover),
-                              SizedBox(height: SizeUtils.verticalBlockSize * 2),
-                            ],
-                          );
-                        }
-
-                        return const SizedBox.shrink();
-                      }),
-                      _photoButtons(),
-                      SizedBox(height: SizeUtils.verticalBlockSize * 2),
-                      _bottomButtons(),
-                      SizedBox(height: SizeUtils.verticalBlockSize * 2),
-                    ]),
-              )),
+                  horizontal: SizeUtils.horizontalBlockSize * 3),
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: SizeUtils.verticalBlockSize * 2),
+                    _stepper(),
+                    SizedBox(height: SizeUtils.verticalBlockSize * 2),
+                    if (_visitorController.stepperIndex.value == 0)
+                      Flexible(child: _formStepper1()),
+                    if (_visitorController.stepperIndex.value == 1)
+                      Flexible(child: _formStepper2()),
+                    SizedBox(height: SizeUtils.verticalBlockSize * 2),
+                    if (_visitorController.stepperIndex.value == 1)
+                      Padding(
+                        padding: EdgeInsets.only(
+                            bottom: SizeUtils.verticalBlockSize * 1),
+                        child: CustomText(
+                            title: "Identification Photo",
+                            fontWeight: FontWeight.w600,
+                            fontSize: SizeUtils.fSize_12()),
+                      ),
+                    if (_visitorController.stepperIndex.value == 0 &&
+                        _visitorController.imagePath.value.isNotEmpty)
+                      Column(children: [
+                        if (_visitorController.imagePath.value
+                            .startsWith("/data/"))
+                          Image.file(File(_visitorController.imagePath.value),
+                              height: 150,
+                              width: SizeUtils.screenWidth,
+                              fit: BoxFit.cover),
+                        if (_visitorController.imagePath.value
+                            .startsWith("https://"))
+                          CustomCachedImage(
+                              imageUrl: _visitorController.imagePath.value,
+                              height: 150,
+                              width: SizeUtils.screenWidth,
+                              fit: BoxFit.cover),
+                        // Image.network(_visitorController.imagePath.value,
+                        //     height: 150,
+                        //     width: SizeUtils.screenWidth,
+                        //     fit: BoxFit.cover),
+                        SizedBox(height: SizeUtils.verticalBlockSize * 2),
+                      ]),
+                    if (_visitorController.stepperIndex.value == 1 &&
+                        _visitorController.imagePath2.value.isNotEmpty)
+                      Column(children: [
+                        if (_visitorController.imagePath2.value
+                            .startsWith("/data/"))
+                          Image.file(File(_visitorController.imagePath2.value),
+                              height: 150,
+                              width: SizeUtils.screenWidth,
+                              fit: BoxFit.cover),
+                        if (_visitorController.imagePath2.value
+                            .startsWith("https://"))
+                          // Image.network(_visitorController.imagePath2.value,
+                          //     height: 150,
+                          //     width: SizeUtils.screenWidth,
+                          //     fit: BoxFit.cover),
+                          CustomCachedImage(
+                              imageUrl: _visitorController.imagePath2.value,
+                              height: 150,
+                              width: SizeUtils.screenWidth,
+                              fit: BoxFit.cover),
+                        SizedBox(height: SizeUtils.verticalBlockSize * 2),
+                      ]),
+                    _photoButtons(),
+                    SizedBox(height: SizeUtils.verticalBlockSize * 2),
+                    _bottomButtons(),
+                    SizedBox(height: SizeUtils.verticalBlockSize * 2),
+                  ]),
+            ),
+          ),
         ),
       ),
     );
@@ -146,94 +232,173 @@ class _AddVisitorViewState extends State<AddVisitorView> {
   }
 
   Widget _formStepper1() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 700;
-        return Wrap(
-          spacing: 20,
-          runSpacing: 16,
-          children: [
-            _field('Visitor Name *', 'Enter visitor\'s full name',
-                _visitorController.vNameController,
-                validator: AppValidator.nameValidator),
-            _field('Mobile Number *', '+91 XXXXX XXXXX',
-                _visitorController.moNumController,
-                suffix: const Icon(Icons.search),
-                validator: AppValidator.validateIndianMobile),
-            _field('Email *', 'Enter email address',
-                _visitorController.emailController,
-                validator: AppValidator.emailValidator),
-            _field('Company Name *', 'Enter company name',
-                _visitorController.companyController,
-                validator: AppValidator.comNameValidator),
-            _field('No of Persons *', 'Enter number of persons',
-                _visitorController.personNumController,
-                validator: AppValidator.emptyField, suffix: _personNumField()),
-            _field('Host Name *', 'Enter host name',
-                _visitorController.hostNameController,
-                validator: AppValidator.nameValidator),
-            _field(
-                'Site *', 'Gopin Semicon', _visitorController.siteController),
-            _field('Gate Number *', '3', _visitorController.getNumController,
-                validator: AppValidator.emptyField),
-            _dateField('Date *'),
-            _timeField('Time *'),
+    final width = MediaQuery.of(Get.context!).size.width;
+    final isMobile = width < 700;
 
-            // _field('Vehicle Number', 'Enter vehicle number',
-            //     _visitorController.vehicleNoController),
-            // _field('Vehicle Type', 'Enter host name',
-            //     _visitorController.hostNameController),
-            // _field('Item Type', 'Enter item type',
-            //     _visitorController.hostNameController),
-            // _field('No of Items', 'Enter number of items',
-            //     _visitorController.hostNameController),
-          ].map((e) {
-            return SizedBox(
-                width: isMobile
-                    ? double.infinity
-                    : (constraints.maxWidth / 2) - 12,
-                child: e);
-          }).toList(),
+    return Wrap(
+      spacing: 20,
+      runSpacing: 16,
+      children: [
+        _field('Visitor Name *', 'Enter visitor\'s full name',
+            _visitorController.vNameController,
+            validator: AppValidator.nameValidator),
+
+        _field('Mobile Number *', '+91 XXXXX XXXXX',
+            _visitorController.moNumController,
+            suffix: GestureDetector(
+                onTap: () async {
+                  if( _visitorController.moNumController.text.isNotEmpty) {
+                    await _visitorController.getVisitorDataOnMobile(context,
+                        input: _visitorController.moNumController.text);
+                  }
+                },
+                child: const Icon(Icons.search)),
+            validator: AppValidator.validateIndianMobile),
+
+        _field('Email *', 'Enter email address',
+            _visitorController.emailController,
+            validator: AppValidator.emailValidator),
+
+        _field('Company Name *', 'Enter company name',
+            _visitorController.companyController,
+            validator: AppValidator.comNameValidator),
+
+        _field(
+          'No of Persons *',
+          'Enter number of persons',
+          _visitorController.personNumController,
+          isNum: true,
+          keyboardType: TextInputType.number,
+          validator: AppValidator.emptyField,
+          suffix: _personNumField(),
+        ),
+
+        // Host Name
+        CustomText(
+            title: 'Host Name *',
+            fontWeight: FontWeight.w600,
+            fontSize: SizeUtils.fSize_12()),
+
+        _hostNameTypeAhead(),
+
+        Obx(() => _visitorController.departmentController.value.text.isNotEmpty
+            ? _field(
+                'Department', '', _visitorController.departmentController.value,
+                validator: AppValidator.siteValidator)
+            : const SizedBox()),
+
+        // _field('Site *', 'Gopin Semicon', _visitorController.siteController,
+        //     validator: AppValidator.siteValidator),
+        // site Name
+        CustomText(
+            title: 'Site *',
+            fontWeight: FontWeight.w600,
+            fontSize: SizeUtils.fSize_12()),
+        _siteTypeAhead(),
+
+        _field('Gate Number *', '3', _visitorController.getNumController,
+            validator: AppValidator.emptyField),
+
+        _dateField('Date *'),
+        _timeField('Time *'),
+      ].map((e) {
+        return SizedBox(
+          width: isMobile ? double.infinity : (width / 2) - 12,
+          child: e,
         );
+      }).toList(),
+    );
+  }
+
+  Widget _hostNameTypeAhead() {
+    return CustomTypeAheadField(
+      controller: _visitorController.hostNameController,
+      hintText: "Host Name",
+      suggestionsCallback: (query) async {
+        return await _visitorController.searchHost(
+          context,
+          input: query.trim(),
+        );
+      },
+      onSelected: (value) {
+        _visitorController.hostNameController.text = value;
+        final index = _visitorController.searchHostModel.value.userList!
+            .indexWhere((e) => e.name == value);
+        _visitorController.departmentController.value.text = _visitorController
+                .searchHostModel.value.userList?[index].department ??
+            "";
+        _visitorController.departmentController.refresh();
+      },
+    );
+  }
+
+  Widget _siteTypeAhead() {
+    return CustomTypeAheadField(
+      controller: _visitorController.siteController,
+      hintText: 'Enter site name',
+      suggestionsCallback: (query) async {
+        return await _visitorController.searchSite(context,
+            input: query.trim());
+      },
+      onSelected: (value) {
+        _visitorController.siteController.text = value;
       },
     );
   }
 
   Widget _formStepper2() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 700;
-        return Wrap(
-          spacing: 20,
-          runSpacing: 16,
-          children: [
-            _field('Vehicle Number', 'Enter vehicle number',
-                _visitorController.vehicleNoController,
-                validator: AppValidator.nameValidator),
-            _field('Vehicle Type', 'Select vehicle type',
-                _visitorController.vehicleTypeController,
-                suffix: const Icon(Icons.search),
-                validator: AppValidator.validateIndianMobile),
-            _field('Item Type', 'Enter item type',
-                _visitorController.itemTypeController,
-                validator: AppValidator.emailValidator),
-            _field('No of Items', 'Enter number of items',
-                _visitorController.noOfItemController,
-                validator: AppValidator.comNameValidator),
-          ].map((e) {
-            return SizedBox(
-                width: isMobile
-                    ? double.infinity
-                    : (constraints.maxWidth / 2) - 12,
-                child: e);
-          }).toList(),
+    final width = MediaQuery.of(Get.context!).size.width;
+    final isMobile = width < 700;
+
+    return Wrap(
+      spacing: 20,
+      runSpacing: 16,
+      children: [
+        _field('Vehicle Number', 'Enter vehicle number',
+            _visitorController.vehicleNoController,
+            validator: AppValidator.nameValidator),
+        CustomText(
+            title: "Vehicle Type",
+            fontWeight: FontWeight.w600,
+            fontSize: SizeUtils.fSize_12()),
+        CustomDropdownField(
+          hint: 'Select vehicle type',
+          items: _visitorController.vehicleTypeList,
+          value: _visitorController.selectedVehicle.value,
+          onChanged: (value) {
+            _visitorController.selectedVehicle.value =
+                value ?? _visitorController.vehicleTypeList.first;
+          },
+          validator: (value) {
+            if (value == null) return 'Please select role.';
+            return null;
+          },
+        ),
+        _field('Item Type', 'Enter item type',
+            _visitorController.itemTypeController,
+            validator: AppValidator.emptyField),
+        _field('No of Items', 'Enter number of items',
+            _visitorController.noOfItemController,
+            validator: AppValidator.emptyField),
+      ].map((e) {
+        return SizedBox(
+          width: isMobile ? double.infinity : (width / 2) - 12,
+          child: e,
         );
-      },
+      }).toList(),
     );
   }
 
-  Widget _field(String label, String hint, TextEditingController controller,
-      {Widget? suffix, FormFieldValidator<String>? validator}) {
+  Widget _field(
+    String label,
+    String hint,
+    TextEditingController controller, {
+    Widget? suffix,
+    FormFieldValidator<String>? validator,
+    bool? isNum,
+    bool? isRead,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       CustomText(
           title: label,
@@ -242,7 +407,11 @@ class _AddVisitorViewState extends State<AddVisitorView> {
       const SizedBox(height: 6),
       CustomTextField(
           controller: controller,
-          fillColor: AppColors.whiteColor,
+          isNumber: isNum ?? false,
+          keyboardType: keyboardType,
+          hintText: hint,
+          readOnly: isRead ?? false,
+          fillColor: AppColors.fillColor,
           validator: validator ?? AppValidator.emailValidator,
           suffixIcon: suffix),
     ]);
@@ -267,21 +436,27 @@ class _AddVisitorViewState extends State<AddVisitorView> {
         ]),
       );
 
-  Widget _dateField(String label) =>
-      _field(label, '24/12/2025', _visitorController.dateController,
-          suffix: GestureDetector(
-              onTap: () {
-                _visitorController.pickDate(context, (date) {
-                  _visitorController.selectedDate.value =
-                      date ?? DateTime.now();
-                  _visitorController.dateController.text = _visitorController
-                      .formatDate(_visitorController.selectedDate.value);
-                });
-              },
-              child: const Icon(Icons.calendar_today)));
+  Widget _dateField(String label) {
+    log("get date :-${_visitorController.dateController.text}");
+    return _field(label, '24/12/2025', _visitorController.dateController,
+        isNum: true,
+        keyboardType: TextInputType.datetime,
+        validator: AppValidator.emptyField,
+        suffix: GestureDetector(
+            onTap: () {
+              _visitorController.pickDate(context, (date) {
+                _visitorController.selectedDate.value = date ?? DateTime.now();
+                _visitorController.dateController.text =
+                    AppUtils.formatDate(_visitorController.selectedDate.value);
+              });
+            },
+            child: const Icon(Icons.calendar_today)));
+  }
 
   Widget _timeField(String label) =>
       _field(label, '04 : 53 PM', _visitorController.timeController,
+          isRead: true,
+          validator: AppValidator.emptyField,
           suffix: GestureDetector(
               onTap: () async {
                 final time =
@@ -308,8 +483,8 @@ class _AddVisitorViewState extends State<AddVisitorView> {
       {bool outlined = false, VoidCallback? onPressed}) {
     return OutlinedButton.icon(
       onPressed: onPressed ?? () {},
-      icon: Icon(icon),
-      label: Text(text),
+      icon: Icon(icon, color: AppColors.black11A),
+      label: CustomText(title: text),
       style: OutlinedButton.styleFrom(
         side: outlined ? const BorderSide(color: Colors.green) : null,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -335,22 +510,59 @@ class _AddVisitorViewState extends State<AddVisitorView> {
           child: _actionBtn(
               _visitorController.stepperIndex.value == 0
                   ? 'Clear'
-                  : 'Create Pass', onPressed: () {
-        _visitorController.clearField();
+                  : 'Create Pass', onPressed: () async {
+        if (_visitorController.stepperIndex.value == 0) {
+          _visitorController.clearField();
+        }
+        if (_visitorController.stepperIndex.value == 1) {
+          if (getType == "add") {
+            await _visitorController.addVisitor(context);
+          } else if (getType != "add") {
+            await _visitorController.updateVisitor(context, id: id ?? "");
+          }
+        }
       })),
       const SizedBox(width: 12),
       Expanded(
-          child: _actionBtn(
-              _visitorController.stepperIndex.value == 0
-                  ? 'Next'
-                  : 'Print Pass',
-              primary: true, onPressed: () {
-        if (formKey.currentState!.validate()) {
-        _visitorController.stepperIndex.value = 1;
-        _visitorController.stepperIndex.refresh();
-        }
-        log("hello");
-      })),
+        child: _actionBtn(
+            _visitorController.stepperIndex.value == 0 ? 'Next' : 'Print Pass',
+            primary: _visitorController.isFormValid.value, onPressed: () async {
+          if (_visitorController.stepperIndex.value == 1) {
+            customLoadingDialog();
+            Uint8List? imageBytes;
+            final imagePath = data11?.imagePath;
+            if (imagePath != null && imagePath.isNotEmpty) {
+              imageBytes = await AppUtils.imageUrlToUint8List(imagePath);
+            }
+            generateVisitorPassPdf(
+                    hostName: data11?.host ?? "",
+                    vehicleType: data11?.vehicleType ?? "",
+                    vehicleNo: data11?.vehicleNumber ?? "",
+                    visitorName: data11?.name ?? "",
+                    badgeNo: data11?.badgeNumber ?? "",
+                    mobile: data11?.mobileNumber ?? "",
+                    company: data11?.companyName ?? "",
+                    checkInTime: data11?.time ?? "",
+                    department: data11?.department ?? "",
+                    site: data11?.entryPlace ?? "",
+                    gate: data11?.entryGate ?? "",
+                    photo: imageBytes)
+                .then((file) async {
+              final pdfFile = File(file.path);
+              if (pdfFile.existsSync()) {
+                // Proceed to open the PDF
+                await OpenFile.open(pdfFile.path);
+              }
+              customHideLoadingDialog();
+            });
+          }
+
+          if (formKey.currentState!.validate()) {
+            _visitorController.stepperIndex.value = 1;
+            _visitorController.stepperIndex.refresh();
+          }
+        }),
+      ),
     ]);
   }
 
@@ -359,7 +571,7 @@ class _AddVisitorViewState extends State<AddVisitorView> {
     return ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary ? AppColors.green : AppColors.whiteColor,
-          foregroundColor: primary ? AppColors.whiteColor : AppColors.black11A,
+          // foregroundColor: primary ? AppColors.whiteColor : AppColors.black11A,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -367,6 +579,9 @@ class _AddVisitorViewState extends State<AddVisitorView> {
             () {
               _visitorController.stepperIndex.value = 1;
             },
-        child: Text(text));
+        child: CustomText(
+            title: text,
+            fontSize: SizeUtils.fSize_11(),
+            color: primary ? AppColors.whiteColor : AppColors.black11A));
   }
 }

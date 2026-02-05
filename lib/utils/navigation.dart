@@ -1,12 +1,16 @@
 import 'package:get/get.dart';
 import 'package:visitor_app/screen/screens/dashboard/dashboard_view.dart';
+import 'package:visitor_app/screen/screens/dashboard/master_screen/add_user_view.dart' show AddUserView;
 import 'package:visitor_app/screen/screens/dashboard/visitor_screen/add_visitor_view.dart';
+import 'package:visitor_app/screen/screens/dashboard/visitor_screen/scanner_view.dart'
+    show QrScannerPage;
 import 'package:visitor_app/screen/screens/dashboard/visitor_screen/user_detail_view.dart';
 import 'package:visitor_app/screen/screens/login_screen/login_screen.dart';
 import 'package:visitor_app/splash_screen/splash_view.dart';
 
 mixin Routes {
   static const defaultTransition = Transition.cupertino;
+
   // static const downToUpTransition = Transition.downToUp;
 
   // get started
@@ -15,7 +19,8 @@ mixin Routes {
   static const String dashboardView = '/DashboardView';
   static const String userDetailView = '/UserDetailView';
   static const String addVisitorView = '/AddVisitorView';
-
+  static const String qrScannerPage = '/QrScannerPage';
+  static const String addUserView = '/AddUserView';
 
   static List<GetPage<dynamic>> pages = [
     GetPage<dynamic>(
@@ -25,7 +30,7 @@ mixin Routes {
     ),
     GetPage<dynamic>(
       name: loginScreen,
-      page: () =>  LoginScreen(),
+      page: () => LoginScreen(),
       transition: defaultTransition,
     ),
     GetPage<dynamic>(
@@ -35,15 +40,23 @@ mixin Routes {
     ),
     GetPage<dynamic>(
       name: userDetailView,
-      page: () => const UserDetailView(),
+      page: () =>  UserDetailView(),
       transition: defaultTransition,
     ),
     GetPage<dynamic>(
       name: addVisitorView,
-      page: () =>  AddVisitorView(),
+      page: () => AddVisitorView(),
       transition: defaultTransition,
     ),
-
-
+    GetPage<dynamic>(
+      name: qrScannerPage,
+      page: () => QrScannerPage(),
+      transition: defaultTransition,
+    ),
+    GetPage<dynamic>(
+      name: addUserView,
+      page: () => AddUserView(),
+      transition: defaultTransition,
+    ),
   ];
 }
