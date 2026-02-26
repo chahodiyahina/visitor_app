@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:visitor_app/constant/endpoint_constant.dart';
@@ -27,6 +26,7 @@ class HomeController extends GetxController {
       }
     } catch (e, st) {
       if (isFirstApiCall) {
+        log("message 44: ---$isFirstApiCall");
         customHideLoadingDialog();
         isFirstApiCall = false;
       }
@@ -50,7 +50,4 @@ class HomeController extends GetxController {
       log("updateAppointmentStatusCheckOut ERROR ::: $e === $st");
     }
   }
-
-
-
 }

@@ -17,6 +17,7 @@ import 'package:visitor_app/utils/appUtilas.dart';
 import 'package:visitor_app/utils/size_utils.dart';
 import 'package:visitor_app/widget/custom_loading_dialog.dart';
 import 'package:visitor_app/widget/custom_text.dart';
+import 'package:visitor_app/widget/custom_toast.dart';
 
 class VisitorController extends GetxController {
   RxInt selectedIndex = 0.obs;
@@ -25,12 +26,19 @@ class VisitorController extends GetxController {
   RxString imagePath2 = "".obs;
   RxInt increaseNoValue = 0.obs;
   RxBool isFormValid = false.obs;
+  RxBool isDataGetOnMobNum = false.obs;
   Rx<DateTime> selectedDate = DateTime.now().obs;
   bool isFirstApiCall = true;
   RxInt selectedVisitorIndex = 0.obs;
-  final List<String> vehicleTypeList = ['Select vehicle type', "Car", "Truck","Motor Cyclr","Plane","Bike"];
+  final List<String> vehicleTypeList = [
+    'Select vehicle type',
+    "Car",
+    "Truck",
+    "Motor Cyclr",
+    "Plane",
+    "Bike"
+  ];
   RxString selectedVehicle = "".obs;
-
 
   TextEditingController searchController = TextEditingController();
   TextEditingController vNameController = TextEditingController();
@@ -45,7 +53,6 @@ class VisitorController extends GetxController {
   TextEditingController hostNameController = TextEditingController();
   Rx<TextEditingController> departmentController = TextEditingController().obs;
   TextEditingController vehicleNoController = TextEditingController();
-  TextEditingController vehicleTypeController = TextEditingController();
   TextEditingController itemTypeController = TextEditingController();
   TextEditingController noOfItemController = TextEditingController();
 
@@ -72,16 +79,18 @@ class VisitorController extends GetxController {
 
   Future getImageCheckOut(ImageSource source, BuildContext context,
       {String? id}) async {
-    log("0000");
     final XFile? pickedFile = await ImagePicker().pickImage(source: source);
     if (pickedFile != null) {
+      customLoadingDialog();
       log("1111");
       String selectedFile = pickedFile.path;
       log("22222 :-$selectedFile");
       String? img = await AppUtils.fileToBase64(selectedFile);
       log("get image:-$img");
       updateAppointmentStatusCheckOutWithImage(context, id: id, img: img);
+      customHideLoadingDialog();
     }
+
     return "";
   }
 
@@ -98,7 +107,7 @@ class VisitorController extends GetxController {
     personNumController.clear();
     hostNameController.clear();
     vehicleNoController.clear();
-    vehicleTypeController.clear();
+    selectedVehicle.value = "";
     itemTypeController.clear();
     noOfItemController.clear();
     departmentController.value.clear();
@@ -106,6 +115,7 @@ class VisitorController extends GetxController {
     imagePath2.value = "";
     stepperIndex.value = 0;
     isFormValid.value = false;
+    isDataGetOnMobNum.value = false;
   }
 
   setDataInField(
@@ -139,7 +149,7 @@ class VisitorController extends GetxController {
     noOfItemController.text = noOfItem ?? "";
     itemTypeController.text = itemType ?? "";
     vehicleNoController.text = vehicleNum ?? "";
-    vehicleTypeController.text = vehicleType ?? "";
+    selectedVehicle.value = vehicleType ?? "";
     imagePath.value = img1 ?? "";
     imagePath2.value = img2 ?? "";
   }
@@ -173,6 +183,7 @@ class VisitorController extends GetxController {
     try {
       if (isFirstApiCall) {
         customLoadingDialog();
+        log("hello-----111");
       }
       var response =
           await HttpServices.getHttpMethod(url: ApiEndPoint.visitorDataGet);
@@ -182,11 +193,13 @@ class VisitorController extends GetxController {
       if (isFirstApiCall) {
         customHideLoadingDialog();
         isFirstApiCall = false;
+        log("hello-----2222");
       }
     } catch (e, st) {
       if (isFirstApiCall) {
         customHideLoadingDialog();
         isFirstApiCall = false;
+        log("hello-----3333");
       }
       log("home data get erro $e === $st ====");
     }
@@ -213,14 +226,16 @@ class VisitorController extends GetxController {
             hostName: data?.host,
             site: data?.entryPlace,
             gateNumber: data?.entryGate,
-            date: data?.date?.toString(),
+            // date: AppUtils.formatDateFormat(dateController.text.trim()),
+            date: AppUtils.formatDate(data?.date ?? DateTime.now()),
             time: data?.time,
             img1: data?.imagePath,
             vehicleNum: data?.vehicleNumber,
             vehicleType: data?.vehicleType,
-            itemType: data?.itemTypes,
-            noOfItem: data?.numberOfItems,
+            // itemType: data?.itemTypes,
+            // noOfItem: data?.numberOfItems,
             img2: data?.identityProofImage);
+        isDataGetOnMobNum.value = true;
       } else {
         log("getVisitorDataOnMobile FAILED ::: ${response['error_description']}");
       }
@@ -275,15 +290,23 @@ class VisitorController extends GetxController {
 
   Future<void> addVisitor(BuildContext context, {String? input}) async {
     try {
-      String? base64Image1 = await AppUtils.fileToBase64(imagePath.value);
-      String? base64Image2 = await AppUtils.fileToBase64(imagePath2.value);
+      customLoadingDialog();
+      String? base64Image1;
+      String? base64Image2;
+      if (imagePath.value.isNotEmpty) {
+        base64Image1 = await AppUtils.fileToBase64(imagePath.value);
+      }
+      if (imagePath2.value.isNotEmpty) {
+        base64Image2 = await AppUtils.fileToBase64(imagePath2.value);
+      }
+
       Map<String, dynamic> data = {
         "name": vNameController.text.trim(),
         "mobileNumber": moNumController.text.trim(),
         "email": emailController.text.trim(),
         "companyName": companyController.text.trim(),
         "vehicleNumber": vehicleNoController.text.trim(),
-        "vehicleType": vehicleTypeController.text.trim(),
+        "vehicleType": selectedVehicle.value,
         "itemTypes": itemTypeController.text.trim(),
         "numberOfItems": noOfItemController.text.trim(),
         "host": hostNameController.text.trim(),
@@ -292,30 +315,41 @@ class VisitorController extends GetxController {
             ? AppUtils.formatDateFormat(dateController.text.trim())
             : "",
         "time": timeController.text.trim(),
-        "image": "data:image/jpeg;base64,$base64Image1",
-        "identityProofImage": "data:image/jpeg;base64,$base64Image2",
+        // "image": "data:image/jpeg;base64,$base64Image1",
+        // "identityProofImage": "data:image/jpeg;base64,$base64Image2",
         "totalPerson": personNumController.text.trim(),
         "entryPlace": siteController.text.trim(),
         "entryGate": getNumController.text.trim(),
       };
+
+      if (base64Image1 != null) {
+        data["image"] = "data:image/jpeg;base64,$base64Image1";
+      }
+      if (base64Image2 != null) {
+        data["identityProofImage"] = "data:image/jpeg;base64,$base64Image2";
+      }
       log("create visitor data:-$data");
       final response = await HttpServices.postHttpMethod(
           url: ApiEndPoint.createVisitor, data: data);
       if (response['error_description'] == null) {
         log("addVisitor SUCCESS ::: ${response['body']}");
         await getVisitorScreenData();
+        customHideLoadingDialog();
         clearField();
         Get.back();
       } else {
+        customHideLoadingDialog();
         log("addVisitor FAILED ::: ${response['error_description']}");
       }
     } catch (e, st) {
+      customHideLoadingDialog();
       log("addVisitor ERROR ::: $e === $st");
     }
   }
 
   Future<void> updateVisitor(BuildContext context, {dynamic id}) async {
     try {
+      customLoadingDialog();
       String? base64Image2;
       String? base64Image1;
       if (imagePath.value.startsWith("https://") ||
@@ -333,7 +367,7 @@ class VisitorController extends GetxController {
         "email": emailController.text.trim(),
         "companyName": companyController.text.trim(),
         "vehicleNumber": vehicleNoController.text.trim(),
-        "vehicleType": vehicleTypeController.text.trim(),
+        "vehicleType": selectedVehicle.value,
         "itemTypes": itemTypeController.text.trim(),
         "numberOfItems": noOfItemController.text.trim(),
         "host": hostNameController.text.trim(),
@@ -354,12 +388,17 @@ class VisitorController extends GetxController {
       if (response['error_description'] == null) {
         log("updateVisitor SUCCESS ::: ${response['body']}");
         await getVisitorScreenData();
+        CustomToast.successToast(
+            message: "Update successfully", context: context);
         clearField();
+        customHideLoadingDialog();
         Get.back();
       } else {
+        customHideLoadingDialog();
         log("updateVisitor FAILED ::: ${response['error_description']}");
       }
     } catch (e, st) {
+      customHideLoadingDialog();
       log("updateVisitor ERROR ::: $e === $st");
     }
   }
@@ -367,17 +406,24 @@ class VisitorController extends GetxController {
   Future<void> deleteVisitorAppointment(BuildContext context,
       {String? id}) async {
     try {
+      customLoadingDialog();
       final response = await HttpServices.postHttpMethod(
         url: ApiEndPoint.appointmentDelete,
         data: {"id": id},
       );
       if (response['error_description'] == null) {
         log("deleteVisitorAppointment SUCCESS ::: ${response['body']}");
+        customHideLoadingDialog();
         await getVisitorScreenData();
+        CustomToast.successToast(
+            message: "Delete visitor appointment successfully",
+            context: context);
       } else {
+        customHideLoadingDialog();
         log("deleteVisitorAppointment FAILED ::: ${response['error_description']}");
       }
     } catch (e, st) {
+      customHideLoadingDialog();
       log("deleteVisitorAppointment ERROR ::: $e === $st");
     }
   }
@@ -415,6 +461,28 @@ class VisitorController extends GetxController {
       }
     } catch (e, st) {
       log("updateAppointmentStatusCheckOutWithImage ERROR ::: $e === $st");
+    }
+  }
+
+  Future<void> updateAppointmentStatusDirectCheckOut(BuildContext context,
+      {String? id}) async {
+    try {
+      customLoadingDialog();
+      final response = await HttpServices.postHttpMethod(
+        url: ApiEndPoint.updateAppointmentStatusDirectCheckOut,
+        data: {"id": id},
+      );
+      if (response['error_description'] == null) {
+        log("updateAppointmentStatusDirectCheckOut SUCCESS ::: ${response['body']}");
+        await getVisitorScreenData();
+        customHideLoadingDialog();
+      } else {
+        customHideLoadingDialog();
+        log("updateAppointmentStatusDirectCheckOut FAILED ::: ${response['error_description']}");
+      }
+    } catch (e, st) {
+      customHideLoadingDialog();
+      log("updateAppointmentStatusDirectCheckOut ERROR ::: $e === $st");
     }
   }
 

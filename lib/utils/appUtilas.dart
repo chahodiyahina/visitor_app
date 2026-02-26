@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 
@@ -69,5 +70,10 @@ class AppUtils {
     } else {
       throw Exception('Failed to load image');
     }
+  }
+
+  static Future<Uint8List> loadImageFromAssets(String path) async {
+    final ByteData data = await rootBundle.load(path);
+    return data.buffer.asUint8List();
   }
 }

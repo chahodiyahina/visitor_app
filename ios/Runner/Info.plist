@@ -45,5 +45,20 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>com.apple.security.files.user-selected.read-only</key>
+    <true/>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to your photo library to select and upload images.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>This app needs access to your camera to take photos.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to your photo library.</string>
+    <key>NSUserNotificationUsageDescription</key>
+    <string>This app needs notification permission to send updates.</string>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
+
 </dict>
 </plist>

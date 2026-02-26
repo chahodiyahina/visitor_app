@@ -206,20 +206,23 @@ class _VisitorViewState extends State<VisitorView>
                                                 data?.imagePath ?? "");
                                       }
                                       generateVisitorPassPdf(
-                                              hostName: data?.host ?? "",
+                                              hostName: data?.host ?? "-",
                                               vehicleType:
-                                                  data?.vehicleType ?? "",
+                                                  data?.vehicleType ?? "-",
                                               vehicleNo:
-                                                  data?.vehicleNumber ?? "",
-                                              visitorName: data?.name ?? "",
-                                              badgeNo: data?.badgeNumber ?? "",
-                                              mobile: data?.mobileNumber ?? "",
-                                              company: data?.companyName ?? "",
-                                              checkInTime: data?.time ?? "",
+                                                  data?.vehicleNumber ?? "-",
+                                              visitorName: data?.name ?? "-",
+                                              badgeNo: data?.badgeNumber ?? "-",
+                                              mobile: data?.mobileNumber ?? "-",
+                                              company: data?.companyName ?? "-",
+                                              checkInTime: data?.time ?? "-",
                                               department:
-                                                  data?.department ?? "",
-                                              site: data?.entryPlace ?? "",
-                                              gate: data?.entryGate ?? "",
+                                                  data?.department ?? "-",
+                                              site: data?.entryPlace ?? "-",
+                                              gate: data?.entryGate ?? "-",
+                                              itemType: data?.itemTypes ?? "-",
+                                              itemNumber:
+                                                  data?.numberOfItems ?? "-",
                                               photo: imageBytes)
                                           .then((file) async {
                                         final pdfFile = File(file.path);
@@ -389,6 +392,7 @@ class _VisitorViewState extends State<VisitorView>
                                 actionIcon(
                                     icon: Icons.print,
                                     onTap: () async {
+                                      log("hello print");
                                       Uint8List? imageBytes;
                                       if (data?.imagePath != null) {
                                         imageBytes =
@@ -396,20 +400,23 @@ class _VisitorViewState extends State<VisitorView>
                                                 data?.imagePath ?? "");
                                       }
                                       generateVisitorPassPdf(
-                                              hostName: data?.host ?? "",
+                                              hostName: data?.host ?? "-",
                                               vehicleType:
-                                                  data?.vehicleType ?? "",
+                                                  data?.vehicleType ?? "-",
                                               vehicleNo:
-                                                  data?.vehicleNumber ?? "",
-                                              visitorName: data?.name ?? "",
-                                              badgeNo: data?.badgeNumber ?? "",
-                                              mobile: data?.mobileNumber ?? "",
-                                              company: data?.companyName ?? "",
-                                              checkInTime: data?.time ?? "",
+                                                  data?.vehicleNumber ?? "-",
+                                              visitorName: data?.name ?? "-",
+                                              badgeNo: data?.badgeNumber ?? "-",
+                                              mobile: data?.mobileNumber ?? "-",
+                                              company: data?.companyName ?? "-",
+                                              checkInTime: data?.time ?? "-",
                                               department:
-                                                  data?.department ?? "",
-                                              site: data?.entryPlace ?? "",
-                                              gate: data?.entryGate ?? "",
+                                                  data?.department ?? "-",
+                                              site: data?.entryPlace ?? "-",
+                                              gate: data?.entryGate ?? "-",
+                                              itemType: data?.itemTypes ?? "-",
+                                              itemNumber:
+                                                  data?.numberOfItems ?? "-",
                                               photo: imageBytes)
                                           .then((file) async {
                                         final pdfFile = File(file.path);

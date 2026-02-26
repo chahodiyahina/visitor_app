@@ -5,9 +5,9 @@ class AppValidator {
     RegExp regex = RegExp(pattern);
     if (value!.isEmpty) {
       return ("Please enter your email address");
-    } else if (!regex.hasMatch(value)) {
+    } /*else if (!regex.hasMatch(value)) {
       return ("Please enter a valid email address");
-    } else {
+    }*/ else {
       return null;
     }
   }

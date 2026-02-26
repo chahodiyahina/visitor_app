@@ -173,7 +173,7 @@ class _ReportViewState extends State<ReportView> {
               fontWeight: FontWeight.normal,
               fontSize: SizeUtils.fSize_11()),
           CustomText(
-              title: "⏰ ${AppUtils.formatDate(data?.time ?? DateTime.now())}",
+              title: "⏰ ${data?.time}"  /*${AppUtils.formatDate(data?.time ?? DateTime.now())}"*/,
               fontWeight: FontWeight.normal,
               fontSize: SizeUtils.fSize_11())
         ])

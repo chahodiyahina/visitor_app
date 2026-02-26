@@ -49,7 +49,7 @@ class Visitor {
   String? host;
   String? department;
   DateTime? date;
-  DateTime? time;
+  String? time;
   String? createdBy;
   DateTime? createdAt;
   dynamic updatedBy;
@@ -102,7 +102,7 @@ class Visitor {
     host: json["host"],
     department: json["department"],
     date: json["date"] == null ? null : DateTime.parse(json["date"]),
-    time: json["time"] == null ? null : DateTime.parse(json["time"]),
+    time: json["time"],
     createdBy: json["createdBy"],
     createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
     updatedBy: json["updatedBy"],
@@ -129,7 +129,7 @@ class Visitor {
     "host": host,
     "department": department,
     "date": "${date!.year.toString().padLeft(4, '0')}-${date!.month.toString().padLeft(2, '0')}-${date!.day.toString().padLeft(2, '0')}",
-    "time": "${time!.year.toString().padLeft(4, '0')}-${time!.month.toString().padLeft(2, '0')}-${time!.day.toString().padLeft(2, '0')}",
+    "time": time,
     "createdBy": createdBy,
     "createdAt": createdAt?.toIso8601String(),
     "updatedBy": updatedBy,

@@ -1,5 +1,6 @@
 class AppString {
-  static const appName = 'Visitor Management';
+  // static const appName = 'Visitor Management';
+  static const appName = 'DIGITAL CHECK IN';
   static const fRoboto = 'Roboto';
   static const fMontserrat = "Montserrat";
   static const dash = 'Dashboard';
@@ -21,11 +22,6 @@ class AppString {
   static const security = "Security";
   static const dltData = 'Are you sure you want to delete';
 
-
-
-
-
   // storage key constant
   static const String stringType = "stringType";
-
 }

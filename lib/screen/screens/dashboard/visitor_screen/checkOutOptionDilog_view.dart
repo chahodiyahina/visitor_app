@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:visitor_app/constant/app_color.dart';
 import 'package:visitor_app/screen/screens/dashboard/visitor_screen/visitor_controller.dart';
-import 'package:visitor_app/widget/custom_loading_dialog.dart';
 
 class CheckoutOptionsDialog extends StatelessWidget {
   String? id;
@@ -20,101 +19,86 @@ class CheckoutOptionsDialog extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            /// ICON
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.lightBlue,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.logout_rounded,
-                size: 28,
-                color: AppColors.infoToastSideColor,
-              ),
+            color: Colors.white, borderRadius: BorderRadius.circular(24)),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          GestureDetector(
+            onTap: () {
+              Get.back();
+            },
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle, color: AppColors.backgroundColor),
+                  child: Icon(Icons.close)),
             ),
+          ),
 
-            const SizedBox(height: 16),
+          /// ICON
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: const BoxDecoration(
+                color: AppColors.lightBlue, shape: BoxShape.circle),
+            child: const Icon(Icons.logout_rounded,
+                size: 28, color: AppColors.infoToastSideColor),
+          ),
 
-            /// TITLE
-            const Text(
-              "Checkout Options",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+          const SizedBox(height: 16),
 
-            const SizedBox(height: 8),
+          /// TITLE
+          const Text("Checkout Options",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
 
-            /// SUBTITLE
-            const Text(
-              "Proceed with the visitor checkout.",
+          const SizedBox(height: 8),
+
+          /// SUBTITLE
+          const Text("Proceed with the visitor checkout.",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
+              style: TextStyle(fontSize: 14, color: Colors.grey)),
+
+          const SizedBox(height: 20),
+
+          /// BUTTON ROW
+          Row(children: [
+            Expanded(
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: const BorderSide(color: Colors.grey),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  _visitorController
+                      .updateAppointmentStatusDirectCheckOut(context, id: id);
+                  Get.back();
+                },
+                child: const Text("Check Out",
+                    style: TextStyle(color: Colors.black)),
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            /// BUTTON ROW
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: Colors.grey),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      Get.back();
-                    },
-                    child: const Text(
-                      "Cancel",
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      customLoadingDialog();
-                      _visitorController.getImageCheckOut(
-                          ImageSource.camera, context,
-                          id: id);
-                      customHideLoadingDialog();
-                    },
-                    child: Text(
-                      "Capture Pass",
-                      style: TextStyle(color: AppColors.whiteColor),
-                    ),
-                  ),
-                ),
-              ],
+                onPressed: () {
+                  Get.back();
+                  _visitorController
+                      .getImageCheckOut(ImageSource.camera, context, id: id);
+                },
+                child: const Text("Capture Pass",
+                    style: TextStyle(color: AppColors.whiteColor)),
+              ),
             ),
-
-            const SizedBox(height: 14),
-          ],
-        ),
+          ]),
+          const SizedBox(height: 14),
+        ]),
       ),
     );
   }

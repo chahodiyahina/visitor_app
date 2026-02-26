@@ -112,13 +112,12 @@ class _AddUserViewState extends State<AddUserView> {
                             _label("Site *"),
                             _input(
                                 hint: "Enter site name",
-                                controller: _masterController.phoneController,
-                                keyboardType: TextInputType.phone),
+                                controller: _masterController.siteController),
                             _label("Gate Number *"),
                             _input(
                                 hint: "Enter gate number",
-                                controller: _masterController.phoneController,
-                                keyboardType: TextInputType.phone),
+                                controller: _masterController.getNoController,
+                                keyboardType: TextInputType.number),
                           ]),
                     const SizedBox(height: 20),
 
@@ -156,10 +155,8 @@ class _AddUserViewState extends State<AddUserView> {
                                         _masterController.selectedRole.value);
                               } else {
                                 log("add user");
-                                _masterController.createUser();
+                                _masterController.createUser(context);
                               }
-                              _masterController.clearField();
-                              Get.back();
                             },
                             title: "Add User",
                             radius: 15,

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:visitor_app/screen/screens/dashboard/master_screen/models/master
 import 'package:visitor_app/screen/screens/dashboard/master_screen/models/vehicle_model.dart';
 import 'package:visitor_app/services/http_services.dart';
 import 'package:visitor_app/widget/custom_loading_dialog.dart';
+import 'package:visitor_app/widget/custom_toast.dart';
 
 class MasterController extends GetxController {
   TextEditingController nameController = TextEditingController();
@@ -15,6 +17,8 @@ class MasterController extends GetxController {
   TextEditingController passController = TextEditingController();
   TextEditingController departmentController = TextEditingController();
   TextEditingController vehicleController = TextEditingController();
+  TextEditingController siteController = TextEditingController();
+  TextEditingController getNoController = TextEditingController();
 
   Rx<String?> selectedRole = Rx<String?>(null);
   Rx<int> selectedUserIndex = 0.obs;
@@ -91,27 +95,57 @@ class MasterController extends GetxController {
     }
   }
 
-  Future createUser() async {
+  Future createUser(BuildContext context) async {
     try {
+      customLoadingDialog();
       Map<String, dynamic> data = {
-        "department": departmentController.text.trim(),
         "email": emailController.text.trim(),
         "mobileNumber": phoneController.text.trim(),
         "name": nameController.text.trim(),
         "password": passController.text.trim(),
         "userrole": selectedRole.value
       };
+      if (selectedRole.value == "Security") {
+        data.addAll({
+          "siteGateNumber": getNoController.text.trim(),
+          "userSite": siteController.text.trim(),
+        });
+      } else {
+        data.addAll({"department": departmentController.text.trim()});
+      }
       var response = await HttpServices.postHttpMethod(
           url: ApiEndPoint.createUser, data: data);
       log("createUser response data ::: ${response['body']} ");
-      if (response['error_description'] == null) {
-        log("createUser SUCCESS ::: ${response['body']}");
+      // 🔑 Decode JSON
+      final Map<String, dynamic> json = jsonDecode(response['body']);
+      log("get json data:- $json");
+      //API error case
+      if (json.containsKey('error')) {
+        clearField();
+        customHideLoadingDialog();
+        CustomToast.errorToast(
+          message: json['error'],
+          context: context,
+        );
+        return;
+      }
+
+      //Success case
+      if (json['status'] == true) {
+        customHideLoadingDialog();
+        Get.back();
+        clearField();
+        CustomToast.successToast(
+          message: json['message'],
+          context: context,
+        );
+
         await getMasterScreenData();
-      } else {
-        log("createUser FAILED ::: ${response['error_description']}");
+        return;
       }
     } catch (e, st) {
-      log("createUser erro $e === $st ====");
+      customHideLoadingDialog();
+      log("createUser error $e === $st ====");
     }
   }
 

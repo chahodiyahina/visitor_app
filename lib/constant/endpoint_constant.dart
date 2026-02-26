@@ -15,8 +15,10 @@ class ApiEndPoint {
   static String createVisitor = "create-visitor";
   static String updateVisitor = "update-visitor/";
   static String appointmentDelete = "appointment-delete";
-  static String updateAppointmentStatusCheckOut = "update-appointment-status-check-out";
-  static String updateAppointmentStatusCheckIn = "update-appointment-status-check-in";
+  static String updateAppointmentStatusCheckOut =
+      "update-appointment-status-check-out";
+  static String updateAppointmentStatusCheckIn =
+      "update-appointment-status-check-in";
   static String getMasterUserData = "users";
   static String updateUserActive = "update-user-active/";
   static String updateUser = "update-user/";
@@ -26,8 +28,12 @@ class ApiEndPoint {
   static String deleteVehicleData = "delete-vehicle-data/";
   static String updateVehicleData = "update-vehicle-data";
   static String getRepostScreenVisitorData = "get-visitors";
-  static String updateAppointmentStatusApproval = "update-appointment-status-approval";
-  static String updateAppointmentStatusRejected = "/api/update-appointment-status-rejected";
-  static String updateAppointmentStatusCheckOutWithImage = "update-appointment-status-check-out-with-image";
-
+  static String updateAppointmentStatusApproval =
+      "update-appointment-status-approval";
+  static String updateAppointmentStatusRejected =
+      "update-appointment-status-rejected";
+  static String updateAppointmentStatusCheckOutWithImage =
+      "update-appointment-status-check-out-with-image";
+  static String updateAppointmentStatusDirectCheckOut           =
+      "update-appointment-status-direct-check-out";
 }

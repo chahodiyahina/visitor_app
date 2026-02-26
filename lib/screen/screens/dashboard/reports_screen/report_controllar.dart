@@ -126,9 +126,7 @@ class ReportControllar extends GetxController {
         v.date != null
             ? "${v.date!.year}-${v.date!.month.toString().padLeft(2, '0')}-${v.date!.day.toString().padLeft(2, '0')}"
             : '',
-        v.time != null
-            ? "${v.time!.hour.toString().padLeft(2, '0')}:${v.time!.minute.toString().padLeft(2, '0')}"
-            : '',
+        v.time ?? "",
         v.appointmentStatus ?? '',
       ]);
     }

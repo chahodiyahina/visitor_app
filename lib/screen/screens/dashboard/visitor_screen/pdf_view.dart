@@ -1,10 +1,13 @@
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:visitor_app/constant/app_images.dart';
+import 'package:visitor_app/utils/appUtilas.dart';
 
 /* /// for single page
 Future<File> generateVisitorPassPdf({
@@ -225,10 +228,16 @@ Future<File> generateVisitorPassPdf({
   required String vehicleNo,
   required String vehicleType,
   required String checkInTime,
+  required String itemType,
+  required String itemNumber,
   Uint8List? photo,
-  Uint8List? qrImage,
 }) async {
   log("Generating PDF for: $visitorName");
+
+  Uint8List? imageBytes;
+  if (photo == null) {
+    imageBytes = await AppUtils.loadImageFromAssets(AppImage.personIcon);
+  }
 
   final pdf = pw.Document();
 
@@ -302,11 +311,13 @@ Future<File> generateVisitorPassPdf({
                             ),
                           ]),
 
-                      pw.Divider(),
+                      pw.Divider(color: PdfColors.grey),
 
                       /// BODY
-                      pw.Row(
+                pw.Padding(padding: pw.EdgeInsets.symmetric(horizontal:10),
+                   child:    pw.Row(
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
+
                           children: [
                             /// LEFT
                             pw.Column(
@@ -315,18 +326,27 @@ Future<File> generateVisitorPassPdf({
                                   pw.Container(
                                     height: 65,
                                     width: 65,
-                                    alignment: pw.Alignment.center,
                                     decoration: pw.BoxDecoration(
-                                      border:
-                                          pw.Border.all(color: PdfColors.green),
+                                      border: pw.Border.all(color: PdfColors.green,width: 2),
                                       borderRadius: pw.BorderRadius.circular(8),
+                                      // color: PdfColors.white,
+                                      boxShadow: [
+                                        pw.BoxShadow(
+                                          color: PdfColors.grey50,
+                                          blurRadius: 2,
+                                          spreadRadius: 4,
+                                          offset: PdfPoint.zero, // X, Y
+                                        ),
+                                      ],
                                     ),
-                                    child: photo != null
-                                        ? pw.Image(pw.MemoryImage(photo),
-                                            fit: pw.BoxFit.cover)
-                                        : pw.Text("No Photo",
-                                            style: const pw.TextStyle(
-                                                fontSize: 9)),
+                                    child: pw.ClipRRect(
+                                      horizontalRadius: 10,
+                                      verticalRadius: 10,
+                                      child: pw.Image(
+                                        pw.MemoryImage(photo ?? imageBytes!),
+                                        fit: pw.BoxFit.cover,
+                                      ),
+                                    ),
                                   ),
                                   pw.SizedBox(height: 10),
                                   _labelValue("Visitor Name", visitorName),
@@ -334,12 +354,9 @@ Future<File> generateVisitorPassPdf({
                                   _labelValue("Gate Number", gate),
                                   _labelValue("Check-in Time", checkInTime),
                                   pw.SizedBox(height: 10),
-                                  if (qrImage != null)
-                                    pw.Image(pw.MemoryImage(qrImage),
-                                        height: 65, width: 65),
                                 ]),
 
-                            pw.SizedBox(width: 14),
+                            pw.SizedBox(width: 35),
 
                             /// RIGHT
                             pw.Expanded(
@@ -353,41 +370,38 @@ Future<File> generateVisitorPassPdf({
                                     _labelValue("Company", company),
                                     _labelValue("Vehicle Number", vehicleNo),
                                     _labelValue("Vehicle Type", vehicleType),
-                                    _labelValue("Item Type", "-"),
-                                    _labelValue("Inward Items", "-"),
+                                    _labelValue("Item Type", itemType),
+                                    _labelValue("Inward Items", itemNumber),
                                     pw.SizedBox(height: 6),
                                     pw.Text("Outward Items",
                                         style: const pw.TextStyle(
                                             fontSize: 7,
                                             color: PdfColors.grey)),
+
                                     pw.Container(
+                                      margin: pw.EdgeInsets.only(top: 10),
                                         height: 1, color: PdfColors.grey),
                                   ]),
                             ),
-                          ]),
-
-                      pw.SizedBox(height: 16),
-                      pw.Text("Outward Items",
-                          style: const pw.TextStyle(
-                              fontSize: 7, color: PdfColors.grey)),
-                      pw.SizedBox(height: 30),
+                          ]),),
+                      pw.SizedBox(height: 20),
 
                       /// SIGNATURES
-                      pw.Row(
+                pw.Padding(padding: pw.EdgeInsets.symmetric(horizontal:10),
+                     child: pw.Row(
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                             _signature("Security In"),
                             _signature("Security Out"),
-                          ]),
-
-                      pw.SizedBox(height: 10),
-
-                      pw.Row(
+                          ]),),
+                      pw.SizedBox(height: 20),
+                      pw.Padding(padding: pw.EdgeInsets.symmetric(horizontal:10),
+                        child:  pw.Row(
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                             _signature("Host"),
                             _signature("Visitor"),
-                          ]),
+                          ]),),
                     ]),
               ),
             ]),

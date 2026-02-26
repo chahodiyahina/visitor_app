@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_file/open_file.dart';
@@ -44,8 +45,8 @@ class _AddVisitorViewState extends State<AddVisitorView> {
     if (getType != "add") {
       fillVisitorData(getType);
     } else {
-      _visitorController.selectedDate.value = DateTime.now();
       _visitorController.clearField();
+      _visitorController.selectedDate.value = DateTime.now();
       _visitorController.dateController.text =
           AppUtils.formatDate(_visitorController.selectedDate.value);
       _visitorController.timeController.text =
@@ -85,7 +86,7 @@ class _AddVisitorViewState extends State<AddVisitorView> {
       hostName: data.host,
       site: data.entryPlace,
       gateNumber: data.entryGate,
-      date: data.date?.toString(),
+      date: AppUtils.formatDate(data.date ?? DateTime.now()),
       time: data.time,
       img1: data.imagePath,
       vehicleNum: data.vehicleNumber,
@@ -142,45 +143,35 @@ class _AddVisitorViewState extends State<AddVisitorView> {
                     if (_visitorController.stepperIndex.value == 0 &&
                         _visitorController.imagePath.value.isNotEmpty)
                       Column(children: [
-                        if (_visitorController.imagePath.value
-                            .startsWith("/data/"))
-                          Image.file(File(_visitorController.imagePath.value),
-                              height: 150,
-                              width: SizeUtils.screenWidth,
-                              fit: BoxFit.cover),
-                        if (_visitorController.imagePath.value
-                            .startsWith("https://"))
-                          CustomCachedImage(
-                              imageUrl: _visitorController.imagePath.value,
-                              height: 150,
-                              width: SizeUtils.screenWidth,
-                              fit: BoxFit.cover),
-                        // Image.network(_visitorController.imagePath.value,
-                        //     height: 150,
-                        //     width: SizeUtils.screenWidth,
-                        //     fit: BoxFit.cover),
+                        (_visitorController.imagePath.value
+                                .startsWith("https://"))
+                            ? CustomCachedImage(
+                                imageUrl: _visitorController.imagePath.value,
+                                height: 150,
+                                width: SizeUtils.screenWidth,
+                                fit: BoxFit.cover)
+                            : Image.file(
+                                File(_visitorController.imagePath.value),
+                                height: 150,
+                                width: SizeUtils.screenWidth,
+                                fit: BoxFit.cover),
                         SizedBox(height: SizeUtils.verticalBlockSize * 2),
                       ]),
                     if (_visitorController.stepperIndex.value == 1 &&
                         _visitorController.imagePath2.value.isNotEmpty)
                       Column(children: [
-                        if (_visitorController.imagePath2.value
-                            .startsWith("/data/"))
-                          Image.file(File(_visitorController.imagePath2.value),
-                              height: 150,
-                              width: SizeUtils.screenWidth,
-                              fit: BoxFit.cover),
-                        if (_visitorController.imagePath2.value
-                            .startsWith("https://"))
-                          // Image.network(_visitorController.imagePath2.value,
-                          //     height: 150,
-                          //     width: SizeUtils.screenWidth,
-                          //     fit: BoxFit.cover),
-                          CustomCachedImage(
-                              imageUrl: _visitorController.imagePath2.value,
-                              height: 150,
-                              width: SizeUtils.screenWidth,
-                              fit: BoxFit.cover),
+                        _visitorController.imagePath2.value
+                                .startsWith("https://")
+                            ? CustomCachedImage(
+                                imageUrl: _visitorController.imagePath2.value,
+                                height: 150,
+                                width: SizeUtils.screenWidth,
+                                fit: BoxFit.cover)
+                            : Image.file(
+                                File(_visitorController.imagePath2.value),
+                                height: 150,
+                                width: SizeUtils.screenWidth,
+                                fit: BoxFit.cover),
                         SizedBox(height: SizeUtils.verticalBlockSize * 2),
                       ]),
                     _photoButtons(),
@@ -247,17 +238,22 @@ class _AddVisitorViewState extends State<AddVisitorView> {
             _visitorController.moNumController,
             suffix: GestureDetector(
                 onTap: () async {
-                  if( _visitorController.moNumController.text.isNotEmpty) {
+                  if (_visitorController.moNumController.text.isNotEmpty) {
                     await _visitorController.getVisitorDataOnMobile(context,
                         input: _visitorController.moNumController.text);
                   }
                 },
                 child: const Icon(Icons.search)),
+            keyboardType: TextInputType.number,
             validator: AppValidator.validateIndianMobile),
 
-        _field('Email *', 'Enter email address',
-            _visitorController.emailController,
-            validator: AppValidator.emailValidator),
+        _field(
+          'Email',
+          'Enter email address',
+          _visitorController.emailController,
+          keyboardType: TextInputType
+              .emailAddress, /*validator: AppValidator.emailValidator*/
+        ),
 
         _field('Company Name *', 'Enter company name',
             _visitorController.companyController,
@@ -412,7 +408,7 @@ class _AddVisitorViewState extends State<AddVisitorView> {
           hintText: hint,
           readOnly: isRead ?? false,
           fillColor: AppColors.fillColor,
-          validator: validator ?? AppValidator.emailValidator,
+          validator: validator,
           suffixIcon: suffix),
     ]);
   }
@@ -530,22 +526,29 @@ class _AddVisitorViewState extends State<AddVisitorView> {
           if (_visitorController.stepperIndex.value == 1) {
             customLoadingDialog();
             Uint8List? imageBytes;
-            final imagePath = data11?.imagePath;
+            final imagePath = _visitorController.imagePath.value.isNotEmpty
+                ? _visitorController.imagePath.value
+                : data11?.imagePath;
             if (imagePath != null && imagePath.isNotEmpty) {
               imageBytes = await AppUtils.imageUrlToUint8List(imagePath);
             }
             generateVisitorPassPdf(
-                    hostName: data11?.host ?? "",
-                    vehicleType: data11?.vehicleType ?? "",
-                    vehicleNo: data11?.vehicleNumber ?? "",
-                    visitorName: data11?.name ?? "",
-                    badgeNo: data11?.badgeNumber ?? "",
-                    mobile: data11?.mobileNumber ?? "",
-                    company: data11?.companyName ?? "",
-                    checkInTime: data11?.time ?? "",
-                    department: data11?.department ?? "",
-                    site: data11?.entryPlace ?? "",
-                    gate: data11?.entryGate ?? "",
+                    hostName: _visitorController.hostNameController.text.trim(),
+                    vehicleType: _visitorController.selectedVehicle.value,
+                    vehicleNo:
+                        _visitorController.vehicleNoController.text.trim(),
+                    visitorName: _visitorController.vNameController.text.trim(),
+                    badgeNo: data11?.badgeNumber ?? "-",
+                    mobile: _visitorController.moNumController.text.trim(),
+                    company: _visitorController.companyController.text.trim(),
+                    checkInTime: _visitorController.dateController.text.trim(),
+                    department: _visitorController
+                        .departmentController.value.text
+                        .trim(),
+                    site: _visitorController.siteController.text.trim(),
+                    gate: _visitorController.getNumController.text.trim(),
+                    itemType: _visitorController.itemTypeController.text.trim(),
+                    itemNumber: data11?.numberOfItems ?? "-",
                     photo: imageBytes)
                 .then((file) async {
               final pdfFile = File(file.path);
@@ -557,9 +560,11 @@ class _AddVisitorViewState extends State<AddVisitorView> {
             });
           }
 
-          if (formKey.currentState!.validate()) {
-            _visitorController.stepperIndex.value = 1;
-            _visitorController.stepperIndex.refresh();
+          if (_visitorController.stepperIndex.value == 0) {
+            if (formKey.currentState!.validate()) {
+              _visitorController.stepperIndex.value = 1;
+              _visitorController.stepperIndex.refresh();
+            }
           }
         }),
       ),

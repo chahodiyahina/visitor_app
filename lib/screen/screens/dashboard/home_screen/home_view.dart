@@ -350,10 +350,13 @@ class _HomeViewState extends State<HomeView>
             children: [
               Row(children: [
                 Icon(icon, size: SizeUtils.verticalBlockSize * 2.2),
-                CustomText(
-                    title: title,
-                    fontSize: SizeUtils.fSize_10(),
-                    fontWeight: FontWeight.bold),
+                Expanded(
+                  child: CustomText(
+                      title: title,
+                      overflow: TextOverflow.ellipsis,
+                      fontSize: SizeUtils.fSize_10(),
+                      fontWeight: FontWeight.bold),
+                ),
               ]),
               CustomText(
                   title: value,
