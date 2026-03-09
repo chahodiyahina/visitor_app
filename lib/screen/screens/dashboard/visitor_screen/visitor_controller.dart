@@ -20,6 +20,7 @@ import 'package:visitor_app/widget/custom_text.dart';
 import 'package:visitor_app/widget/custom_toast.dart';
 
 class VisitorController extends GetxController {
+  late TabController tabController;
   RxInt selectedIndex = 0.obs;
   RxInt stepperIndex = 0.obs;
   RxString imagePath = "".obs;

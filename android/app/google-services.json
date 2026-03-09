@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "495676995510",
+    "project_id": "digital-checkin-7e6cb",
+    "storage_bucket": "digital-checkin-7e6cb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:495676995510:android:27a6e5d351d8e234f87317",
+        "android_client_info": {
+          "package_name": "com.digital.checkin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjJltUPa2vWBpaXg-RJJpJOy8tzYl9LeY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -28,12 +28,13 @@ class ApiEndPoint {
   static String deleteVehicleData = "delete-vehicle-data/";
   static String updateVehicleData = "update-vehicle-data";
   static String getRepostScreenVisitorData = "get-visitors";
+  static String saveFcmToken = "save-fcm-token";
   static String updateAppointmentStatusApproval =
       "update-appointment-status-approval";
   static String updateAppointmentStatusRejected =
       "update-appointment-status-rejected";
   static String updateAppointmentStatusCheckOutWithImage =
       "update-appointment-status-check-out-with-image";
-  static String updateAppointmentStatusDirectCheckOut           =
+  static String updateAppointmentStatusDirectCheckOut =
       "update-appointment-status-direct-check-out";
 }

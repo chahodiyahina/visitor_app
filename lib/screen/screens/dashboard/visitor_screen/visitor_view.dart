@@ -33,7 +33,7 @@ class VisitorView extends StatefulWidget {
 
 class _VisitorViewState extends State<VisitorView>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  // late TabController _tabController;
   final VisitorController _visitorController = Get.put(VisitorController());
   final DashController _dashController = Get.find();
 
@@ -42,7 +42,7 @@ class _VisitorViewState extends State<VisitorView>
     super.initState();
     getVisitorApiData();
     log("get user type in visitor ${_dashController.userType.value}");
-    _tabController = TabController(
+    _visitorController.tabController = TabController(
         vsync: this,
         length: /*_dashController.userType.value == AppString.security ?  4 :*/
             3);
@@ -54,7 +54,7 @@ class _VisitorViewState extends State<VisitorView>
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _visitorController.tabController.dispose();
     super.dispose();
   }
 
@@ -65,7 +65,7 @@ class _VisitorViewState extends State<VisitorView>
       body: Obx(
         () => Column(children: [
           TabBar(
-              controller: _tabController,
+              controller: _visitorController.tabController,
               dividerColor: AppColors.greyF1,
               // tabAlignment: TabAlignment.start,
               indicatorColor: AppColors.black11A,
@@ -96,7 +96,7 @@ class _VisitorViewState extends State<VisitorView>
               ]),
           SizedBox(height: SizeUtils.horizontalBlockSize * 2),
           Expanded(
-            child: TabBarView(controller: _tabController, children: [
+            child: TabBarView(controller: _visitorController.tabController, children: [
               ///pending
               RefreshIndicator(
                 onRefresh: () async {
@@ -173,7 +173,7 @@ class _VisitorViewState extends State<VisitorView>
                                             .updateAppointmentStatusCheckIn(
                                                 context,
                                                 id: data?.id.toString());
-                                        _tabController.index = 1;
+                                        _visitorController.tabController.index = 1;
                                       }
                                     }
                                   },

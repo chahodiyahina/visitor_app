@@ -34,6 +34,7 @@ class _HomeViewState extends State<HomeView>
 
   getApiData() async {
     await _homeController.getHomeScreenData();
+
   }
 
   @override

@@ -59,6 +59,8 @@
     <true/>
     <key>LSSupportsOpeningDocumentsInPlace</key>
     <true/>
+    <key>FirebaseAppDelegateProxyEnabled</key>
+    <true/>
 
 </dict>
 </plist>
